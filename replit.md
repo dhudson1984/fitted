@@ -36,9 +36,20 @@ components/
     LandingNav.tsx      # Landing page nav (scroll-aware glass effect, links, Get Started CTA)
     HeroSlideshow.tsx   # 4-slide auto-rotating hero (4.5s interval, gradient backgrounds)
     ScrollReveal.tsx    # Intersection Observer wrapper for scroll-triggered fade-in animations
+  survey/
+    SurveyShell.tsx     # Main survey orchestrator (step navigation, conditional logic, completion)
+    SurveySidebar.tsx   # Left sidebar with progress bar, section dots, substep nav (260px, charcoal)
+    StepMultiSelect.tsx # Option card grid for multi/single select steps
+    StepPalette.tsx     # Color palette swatch picker (3-col grid)
+    StepAvoid.tsx       # Avoid items grid + "I Trust My Stylist" toggle
+    StepSizing.tsx      # Body type, height/weight, shirt/pants/shoe sizing
+    StepBasics.tsx      # Age range chips + budget min/max inputs
+    StepBrands.tsx      # Brand search input + suggestion chips
+    StepSwipe.tsx       # Look rating cards with like/pass buttons
 lib/
   supabase.ts           # Browser Supabase client
   supabase-server.ts    # Server-side Supabase client
+  survey-data.ts        # Survey step definitions, palettes, avoid items, brand suggestions, types
 middleware.ts           # Supabase auth middleware (protects app routes in production)
 ```
 

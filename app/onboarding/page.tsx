@@ -1,16 +1,10 @@
+import SurveyShell from "@/components/survey/SurveyShell";
+
+export const metadata = {
+  title: "Style Profile — Fitted",
+  description: "Tell us about your style, fit, and budget. We'll build your personalized wardrobe recommendations.",
+};
+
 export default function OnboardingPage() {
-  return (
-    <main
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: "var(--warm-white)" }}
-    >
-      <h1
-        className="font-display text-3xl tracking-widest uppercase"
-        style={{ color: "var(--charcoal)" }}
-        data-testid="text-page-title"
-      >
-        Onboarding
-      </h1>
-    </main>
-  );
+  return <SurveyShell />;
 }
