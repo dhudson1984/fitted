@@ -33,7 +33,16 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npx next dev -p 5000 -H 0.0.0.0"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+NEXT_PUBLIC_SUPABASE_URL = "https://yjbzqcypgekdydmoafbj.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_1yDS-VpHIL26HMLZsrcJ-w_x7UZ2-6E"
