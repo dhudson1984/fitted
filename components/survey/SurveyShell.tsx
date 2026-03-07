@@ -90,6 +90,7 @@ export default function SurveyShell() {
         lifestyle: Array.from(lifestyle),
         completedAt: new Date().toISOString(),
       }));
+      localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
     router.push("/dashboard");
   }, [selections, lifestyle, router]);

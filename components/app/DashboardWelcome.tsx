@@ -1,17 +1,42 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { X, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardWelcome() {
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
+  const [lifestyleCategories, setLifestyleCategories] = useState<string[]>([]);
+  const [styleTags, setStyleTags] = useState<string[]>([]);
 
   useEffect(() => {
     try {
       const survey = localStorage.getItem("fitted_survey");
       const seen = localStorage.getItem("fitted_has_seen_welcome");
       if (survey && !seen) {
+        const parsed = JSON.parse(survey);
+
+        const categories: string[] = parsed.lifestyle || [];
+        setLifestyleCategories(categories);
+
+        const tags: string[] = [...categories];
+
+        const lifestyleStep = parsed["lifestyle-4"];
+        if (Array.isArray(lifestyleStep) && lifestyleStep.length > 0) {
+          tags.push(...lifestyleStep);
+        }
+
+        const workStyle = parsed["lifestyle-2"];
+        if (Array.isArray(workStyle) && workStyle.length > 0) {
+          tags.push(...workStyle);
+        }
+
+        const weekendVibe = parsed["lifestyle-3"];
+        if (Array.isArray(weekendVibe) && weekendVibe.length > 0) {
+          tags.push(...weekendVibe);
+        }
+
+        setStyleTags([...new Set(tags)]);
         setVisible(true);
       }
     } catch {}
@@ -24,85 +49,173 @@ export default function DashboardWelcome() {
     } catch {}
   }
 
+  function handleBuildLook() {
+    dismiss();
+    router.push("/build");
+  }
+
   if (!visible) return null;
 
   return (
     <div
       data-testid="welcome-overlay"
       className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: "rgba(26,26,24,0.55)" }}
+      style={{
+        background: "var(--warm-white)",
+        padding: 40,
+      }}
     >
       <div
-        data-testid="welcome-card"
-        className="relative w-full max-w-md mx-4"
+        data-testid="welcome-inner"
         style={{
-          background: "var(--warm-white)",
-          padding: "48px 36px 40px",
-          animation: "fadeUp 0.5s ease-out",
-          borderRadius: 6,
+          maxWidth: 580,
+          width: "100%",
         }}
+        className="max-md:pt-[60px]"
       >
-        <button
-          data-testid="button-welcome-close"
-          onClick={dismiss}
-          className="absolute top-4 right-4 bg-transparent border-none cursor-pointer"
-          style={{ color: "var(--muted)" }}
+        <div
+          data-testid="text-welcome-eyebrow"
+          className="font-body"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.25em",
+            textTransform: "uppercase",
+            color: "var(--bark)",
+            marginBottom: 16,
+          }}
         >
-          <X size={18} />
-        </button>
-
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles size={20} style={{ color: "var(--bark)" }} />
-          <span
-            className="text-[10px] font-medium tracking-[0.18em] uppercase"
-            style={{ color: "var(--bark)" }}
-          >
-            Style Profile Complete
-          </span>
+          Welcome to Fitted
         </div>
 
-        <h2
+        <h1
           data-testid="text-welcome-title"
-          className="font-display text-3xl font-light mb-3"
-          style={{ color: "var(--charcoal)" }}
+          className="font-display"
+          style={{
+            fontSize: "clamp(40px,6vw,68px)",
+            fontWeight: 300,
+            lineHeight: 1.05,
+            marginBottom: 20,
+            color: "var(--charcoal)",
+          }}
         >
-          Your style profile is ready
-        </h2>
+          Your style profile
+          <br />
+          is ready.
+        </h1>
 
         <p
           data-testid="text-welcome-subtitle"
-          className="text-sm font-light leading-relaxed mb-8"
-          style={{ color: "var(--muted)" }}
+          className="font-body"
+          style={{
+            fontSize: 15,
+            fontWeight: 300,
+            color: "var(--muted)",
+            lineHeight: 1.7,
+            marginBottom: 36,
+            maxWidth: 460,
+          }}
         >
-          We&apos;ve curated looks based on your preferences. Explore what we&apos;ve picked for you, or start building your own.
+          We&apos;ve analysed your answers and we&apos;re ready to start building
+          looks for you. The best way to start is to upload an outfit you love
+          &mdash; we&apos;ll find every piece.
         </p>
 
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/explore"
-            data-testid="link-welcome-explore"
-            onClick={dismiss}
-            className="no-underline px-6 py-3 text-[11px] font-medium tracking-[0.12em] uppercase cursor-pointer transition-colors"
+        {styleTags.length > 0 && (
+          <div
+            data-testid="welcome-summary"
             style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 40,
+            }}
+          >
+            {styleTags.map((tag) => (
+              <span
+                key={tag}
+                data-testid={`welcome-tag-${tag.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")}`}
+                className="font-body"
+                style={{
+                  padding: "6px 14px",
+                  border: "1.5px solid var(--sand)",
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--charcoal)",
+                  background: "var(--cream)",
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div
+          data-testid="welcome-actions"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            maxWidth: 340,
+          }}
+          className="max-md:!max-w-full"
+        >
+          <button
+            data-testid="button-welcome-build"
+            className="font-body"
+            onClick={handleBuildLook}
+            style={{
+              padding: "16px 32px",
               background: "var(--charcoal)",
               color: "var(--cream)",
+              border: "none",
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "background 0.2s",
+              textAlign: "center",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "var(--bark)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "var(--charcoal)")
+            }
           >
-            Explore Looks
-          </Link>
-          <Link
-            href="/build"
-            data-testid="link-welcome-build"
+            Build Your First Look &rarr;
+          </button>
+
+          <button
+            data-testid="button-welcome-dashboard"
+            className="font-body"
             onClick={dismiss}
-            className="no-underline px-6 py-3 text-[11px] font-medium tracking-[0.12em] uppercase cursor-pointer transition-colors"
             style={{
+              padding: "14px 32px",
               background: "transparent",
-              color: "var(--charcoal)",
+              color: "var(--muted)",
               border: "1.5px solid var(--sand)",
+              fontSize: 12,
+              fontWeight: 400,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              textAlign: "center",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--stone)";
+              e.currentTarget.style.color = "var(--charcoal)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--sand)";
+              e.currentTarget.style.color = "var(--muted)";
             }}
           >
-            Build a Look
-          </Link>
+            Take Me to My Dashboard
+          </button>
         </div>
       </div>
     </div>

@@ -54,7 +54,7 @@ components/
     PieceCard.tsx       # Piece card with brand/name/price, metadata, add to bag
     AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state
     ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
-    DashboardWelcome.tsx # Client: first-time welcome overlay
+    DashboardWelcome.tsx # Client: full-screen first-time welcome overlay (lifestyle tags, Build/Dashboard CTAs)
 lib/
   supabase.ts           # Browser Supabase client
   supabase-server.ts    # Server-side Supabase client (server-only, uses next/headers)
