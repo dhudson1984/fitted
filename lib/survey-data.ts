@@ -10,7 +10,7 @@ export interface SurveyStep {
   eyebrow: string;
   question: string;
   hint: string;
-  type: "multi" | "single" | "palette" | "avoid" | "sizing" | "basics" | "brands" | "swipe";
+  type: "multi" | "single" | "palette" | "avoid" | "sizing" | "basics" | "brands" | "swipe" | "intro";
   conditional?: "work" | "weekend";
   options?: SurveyOption[];
 }
@@ -40,6 +40,20 @@ export interface SurveyState {
 }
 
 export const SECTIONS: SurveySection[] = [
+  {
+    id: "intro",
+    name: "Get Started",
+    steps: [
+      {
+        id: "intro-1",
+        label: "Your details",
+        eyebrow: "Welcome to Fitted",
+        question: "First, let\u2019s get to know you.",
+        hint: "We\u2019ll use this to personalise your experience.",
+        type: "intro",
+      },
+    ],
+  },
   {
     id: "lifestyle",
     name: "Your Lifestyle",

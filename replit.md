@@ -44,7 +44,8 @@ components/
     StepPalette.tsx     # Color palette swatch picker (3-col grid)
     StepAvoid.tsx       # Avoid items grid + "I Trust My Stylist" toggle
     StepSizing.tsx      # Body type, height/weight, shirt/pants/shoe sizing
-    StepBasics.tsx      # First name input, age range chips + budget min/max inputs
+    StepIntro.tsx       # First name + email inputs (first step of survey)
+    StepBasics.tsx      # Age range chips + budget min/max inputs
     StepBrands.tsx      # Brand search input + suggestion chips
     StepSwipe.tsx       # Look rating cards with like/pass buttons
   app/

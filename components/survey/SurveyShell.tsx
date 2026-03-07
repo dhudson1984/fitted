@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { getActiveSteps } from "@/lib/survey-data";
 import SurveySidebar from "./SurveySidebar";
+import StepIntro from "./StepIntro";
 import StepMultiSelect from "./StepMultiSelect";
 import StepPalette from "./StepPalette";
 import StepAvoid from "./StepAvoid";
@@ -79,11 +80,13 @@ export default function SurveyShell() {
 
   const handleFinish = useCallback(() => {
     try {
-      const basicsData = selections["basics-1"] as { firstName?: string } | undefined;
-      const firstName = (basicsData?.firstName || "").trim();
+      const introData = selections["intro-1"] as { firstName?: string; email?: string } | undefined;
+      const firstName = (introData?.firstName || "").trim();
+      const email = (introData?.email || "").trim();
       localStorage.setItem("fitted_survey", JSON.stringify({
         ...selections,
         firstName,
+        email,
         lifestyle: Array.from(lifestyle),
         completedAt: new Date().toISOString(),
       }));
@@ -267,6 +270,17 @@ export default function SurveyShell() {
                 </p>
               )}
 
+              {step.type === "intro" && (
+                <StepIntro
+                  data={
+                    (selections[step.id] as { firstName: string; email: string }) || {
+                      firstName: "",
+                      email: "",
+                    }
+                  }
+                  onChange={(val) => updateSelection(step.id, val)}
+                />
+              )}
               {(step.type === "multi" || step.type === "single") && step.options && (
                 <StepMultiSelect
                   options={step.options}
@@ -296,8 +310,7 @@ export default function SurveyShell() {
               {step.type === "basics" && (
                 <StepBasics
                   data={
-                    (selections[step.id] as { firstName: string; ageRange: string; budgetMin: string; budgetMax: string }) || {
-                      firstName: "",
+                    (selections[step.id] as { ageRange: string; budgetMin: string; budgetMax: string }) || {
                       ageRange: "",
                       budgetMin: "",
                       budgetMax: "",
