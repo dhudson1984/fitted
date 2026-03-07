@@ -1,20 +1,19 @@
+import { redirect } from "next/navigation";
+
+const CATEGORY_MAP: Record<string, string> = {
+  "smart-casual": "Smart Casual",
+  "work": "Work",
+  "athletic-outdoors": "Athletic & Outdoors",
+  "athletic": "Athletic & Outdoors",
+  "night-out": "Night Out",
+};
+
 export default function ExploreCategoryPage({
   params,
 }: {
   params: { category: string };
 }) {
-  return (
-    <main
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: "var(--warm-white)" }}
-    >
-      <h1
-        className="font-display text-3xl tracking-widest uppercase"
-        style={{ color: "var(--charcoal)" }}
-        data-testid="text-page-title"
-      >
-        Explore — {params.category}
-      </h1>
-    </main>
-  );
+  const decoded = decodeURIComponent(params.category);
+  const mapped = CATEGORY_MAP[decoded.toLowerCase()] || decoded;
+  redirect(`/explore?category=${encodeURIComponent(mapped)}`);
 }

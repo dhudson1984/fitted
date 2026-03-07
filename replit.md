@@ -19,12 +19,13 @@ app/
   onboarding/page.tsx   # Onboarding flow (outside app group — no nav)
   (app)/                # Route group for authenticated pages (shared nav shell)
     layout.tsx          # App shell: AppNav, MobileMenuDrawer, BagDrawer, Toast, BagProvider
-    dashboard/page.tsx
-    explore/page.tsx
-    explore/[category]/page.tsx
-    looks/[slug]/page.tsx
-    build/page.tsx
-    profile/page.tsx
+    dashboard/page.tsx  # Dashboard with greeting, picked looks, category cards, build CTA
+    dashboard/DashboardGreeting.tsx  # Client component: time-of-day greeting
+    explore/page.tsx    # Explore looks with category tabs, filters, look grid (server)
+    explore/[category]/page.tsx  # Redirects to /explore?category=X
+    looks/[slug]/page.tsx  # Look detail: pieces, styling notes, related looks (server)
+    build/page.tsx      # Placeholder
+    profile/page.tsx    # Placeholder
 components/
   AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
   MobileMenuDrawer.tsx  # Slide-in mobile menu from left
@@ -46,9 +47,18 @@ components/
     StepBasics.tsx      # Age range chips + budget min/max inputs
     StepBrands.tsx      # Brand search input + suggestion chips
     StepSwipe.tsx       # Look rating cards with like/pass buttons
+  app/
+    LookCard.tsx        # Reusable look card with gradient bg, name, badges, hover overlay
+    CategoryCard.tsx    # Category card with gradient, name, count, link to explore
+    PieceCard.tsx       # Piece card with brand/name/price, metadata, add to bag
+    AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state
+    ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
+    DashboardWelcome.tsx # Client: first-time welcome overlay
 lib/
   supabase.ts           # Browser Supabase client
-  supabase-server.ts    # Server-side Supabase client
+  supabase-server.ts    # Server-side Supabase client (server-only, uses next/headers)
+  data.ts               # Server-only data fetching: getLooks, getLookBySlug, getCategoryCounts, getRelatedLooks
+  types.ts              # Client-safe types and utilities: Look, Piece, gradients, filter options
   survey-data.ts        # Survey step definitions, palettes, avoid items, brand suggestions, types
 middleware.ts           # Supabase auth middleware (protects app routes in production)
 ```
