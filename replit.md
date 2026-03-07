@@ -32,6 +32,10 @@ components/
   Toast.tsx             # Toast notification with provider and useToast hook
   providers/
     BagProvider.tsx     # Bag state context (items, addItem, removeItem, clearBag)
+  landing/
+    LandingNav.tsx      # Landing page nav (scroll-aware glass effect, links, Get Started CTA)
+    HeroSlideshow.tsx   # 4-slide auto-rotating hero (4.5s interval, gradient backgrounds)
+    ScrollReveal.tsx    # Intersection Observer wrapper for scroll-triggered fade-in animations
 lib/
   supabase.ts           # Browser Supabase client
   supabase-server.ts    # Server-side Supabase client
@@ -48,6 +52,7 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 | --bark         | #8B7355  | Accent colour, CTAs, highlights|
 | --charcoal     | #2C2C2A  | Primary text, dark backgrounds |
 | --muted        | #7A7268  | Secondary text, placeholders   |
+| --deep         | #1A1A18  | Footer background              |
 
 ## Fonts
 - **Display**: Cormorant Garamond — headings, look names, hero text
