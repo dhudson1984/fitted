@@ -12,14 +12,30 @@ Fitted is a men's fashion styling web application. Users complete an onboarding 
 
 ## Project Structure
 ```
-app/              # Next.js App Router pages and layouts
-  layout.tsx      # Root layout with fonts and global styles
-  page.tsx        # Home/landing page
-  globals.css     # Tailwind + Fitted colour tokens as CSS variables
-lib/              # Utility libraries
-  supabase.ts     # Browser Supabase client
-  supabase-server.ts  # Server-side Supabase client
-components/       # Shared React components
+app/
+  layout.tsx            # Root layout with fonts and global styles
+  page.tsx              # Home/landing page
+  globals.css           # Tailwind + Fitted colour tokens as CSS variables
+  onboarding/page.tsx   # Onboarding flow (outside app group — no nav)
+  (app)/                # Route group for authenticated pages (shared nav shell)
+    layout.tsx          # App shell: AppNav, MobileMenuDrawer, BagDrawer, Toast, BagProvider
+    dashboard/page.tsx
+    explore/page.tsx
+    explore/[category]/page.tsx
+    looks/[slug]/page.tsx
+    build/page.tsx
+    profile/page.tsx
+components/
+  AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
+  MobileMenuDrawer.tsx  # Slide-in mobile menu from left
+  BagDrawer.tsx         # Slide-in shopping bag drawer from right
+  Toast.tsx             # Toast notification with provider and useToast hook
+  providers/
+    BagProvider.tsx     # Bag state context (items, addItem, removeItem, clearBag)
+lib/
+  supabase.ts           # Browser Supabase client
+  supabase-server.ts    # Server-side Supabase client
+middleware.ts           # Supabase auth middleware (protects app routes in production)
 ```
 
 ## Design System Tokens (CSS Variables)
@@ -41,6 +57,7 @@ components/       # Shared React components
 - `font-display` → Cormorant Garamond
 - `font-body` → DM Sans
 - Colour classes: `text-charcoal`, `bg-cream`, `bg-warm-white`, `border-sand`, `text-bark`, `text-muted`, `bg-bark`, `border-stone`
+- `--nav-h: 64px` CSS variable for nav bar height
 
 ## Environment Variables
 - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
@@ -50,9 +67,15 @@ components/       # Shared React components
 - Dev server: `npx next dev -p 5000 -H 0.0.0.0`
 - The workflow "Start application" runs the dev server on port 5000
 
+## Config Notes
+- `package.json` has `"type": "module"` — use `.mjs` for ESM configs, `.cjs` for CommonJS
+- `next.config.mjs` (ESM), `postcss.config.cjs` (CommonJS)
+- Auth middleware bypasses redirect in development (NODE_ENV !== "production")
+
 ## Database (Supabase)
 Tables: `looks`, `pieces`, `look_pieces` (join), `user_profiles`, `saved_looks`
 Schema defined in the build briefing — must be created via Supabase SQL Editor.
+Seeded with 27 looks, 23 pieces, 52 look-piece relationships.
 
 ## Reference Documents
 - `attached_assets/fitted-spec.docx` — Full product specification
