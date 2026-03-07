@@ -101,15 +101,39 @@ export default async function LookDetailPage({
       </div>
 
       <div
+        className="relative overflow-hidden"
         style={{
           background: gradient,
           padding: "48px 24px 56px",
         }}
       >
+        {look.image_url && look.image_url.length > 0 && (
+          <img
+            src={look.image_url}
+            alt={look.name}
+            data-testid="img-look-hero"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: 0.35,
+            }}
+          />
+        )}
         <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, rgba(26,26,24,0.7) 0%, rgba(26,26,24,0.3) 60%, transparent 100%)",
+          }}
+        />
+        <div
+          className="relative"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
+            zIndex: 1,
           }}
         >
           <h1

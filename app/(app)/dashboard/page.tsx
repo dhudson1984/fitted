@@ -8,7 +8,7 @@ import { ArrowRight, Wand2 } from "lucide-react";
 
 export default async function DashboardPage() {
   const [looks, categoryCounts] = await Promise.all([
-    getLooks({ limit: 6 }),
+    getLooks({ limit: 6, withImages: true }),
     getCategoryCounts(),
   ]);
 

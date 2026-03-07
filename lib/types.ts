@@ -6,6 +6,7 @@ export interface Look {
   vibe: string;
   occasion: string;
   season: string;
+  image_url?: string | null;
 }
 
 export interface Piece {

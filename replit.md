@@ -102,6 +102,7 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 Tables: `looks`, `pieces`, `look_pieces` (join), `user_profiles`, `saved_looks`
 Schema defined in the build briefing — must be created via Supabase SQL Editor.
 Seeded with 27 looks, 23 pieces, 52 look-piece relationships.
+- `looks.image_url` (text, nullable) — Supabase Storage URLs for look images. Used on look cards (LookCard), landing featured looks, and look detail hero. Falls back to gradient when null/empty.
 
 ## Reference Documents
 - `attached_assets/fitted-spec.docx` — Full product specification

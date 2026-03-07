@@ -9,6 +9,7 @@ interface Look {
   slug: string;
   name: string;
   category: string;
+  image_url?: string | null;
 }
 
 const cardGradients = [
@@ -68,8 +69,10 @@ export default async function LandingPage() {
     const supabase = createServerSupabase();
     const { data } = await supabase
       .from("looks")
-      .select("id, slug, name, category")
+      .select("id, slug, name, category, image_url")
       .eq("is_active", true)
+      .not("image_url", "is", null)
+      .neq("image_url", "")
       .limit(4);
     if (data) looks = data;
   } catch {
@@ -231,6 +234,7 @@ export default async function LandingPage() {
               <Link
                 href={`/looks/${look.slug}`}
                 data-testid={`card-look-${look.slug}`}
+                className="group"
                 style={{
                   position: "relative",
                   aspectRatio: "3/4",
@@ -245,19 +249,35 @@ export default async function LandingPage() {
                     position: "absolute",
                     inset: 0,
                     background: cardGradients[i % cardGradients.length],
-                    transition: "transform 0.6s ease",
                   }}
                 />
+                {look.image_url && look.image_url.length > 0 && (
+                  <img
+                    src={look.image_url}
+                    alt={look.name}
+                    data-testid={`img-featured-look-${look.slug}`}
+                    className="transition-transform duration-600 group-hover:scale-105"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    loading="lazy"
+                  />
+                )}
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
-                    background: "linear-gradient(to top,rgba(26,26,24,0.75) 0%,transparent 55%)",
+                    background: "linear-gradient(to top,rgba(26,26,24,0.8) 0%,rgba(26,26,24,0.15) 55%,transparent 100%)",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "flex-end",
                     padding: 20,
                     gap: 4,
+                    zIndex: 1,
                   }}
                 >
                   <span

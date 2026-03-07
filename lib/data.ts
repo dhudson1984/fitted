@@ -11,6 +11,7 @@ export async function getLooks(filters?: {
   season?: string;
   sort?: string;
   limit?: number;
+  withImages?: boolean;
 }): Promise<Look[]> {
   const supabase = createServerSupabase();
   let query = supabase.from("looks").select("*");
@@ -19,6 +20,7 @@ export async function getLooks(filters?: {
   if (filters?.vibe) query = query.eq("vibe", filters.vibe);
   if (filters?.occasion) query = query.eq("occasion", filters.occasion);
   if (filters?.season) query = query.eq("season", filters.season);
+  if (filters?.withImages) query = query.not("image_url", "is", null).neq("image_url", "");
 
   if (filters?.sort === "name") {
     query = query.order("name", { ascending: true });
