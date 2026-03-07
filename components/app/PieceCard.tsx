@@ -10,11 +10,15 @@ interface PieceCardProps {
 }
 
 const SLOT_LABELS: Record<string, string> = {
+  shirt: "Shirt",
+  jacket: "Jacket",
+  pants: "Pants",
+  shoes: "Shoes",
+  accessory: "Accessory",
   top: "Top",
   bottom: "Bottom",
   outerwear: "Outerwear",
   footwear: "Footwear",
-  accessory: "Accessory",
   layer: "Layer",
 };
 

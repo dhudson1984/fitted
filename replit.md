@@ -19,7 +19,7 @@ app/
   onboarding/page.tsx   # Onboarding flow (outside app group — no nav)
   (app)/                # Route group for authenticated pages (shared nav shell)
     layout.tsx          # App shell: AppNav, MobileMenuDrawer, BagDrawer, Toast, BagProvider
-    dashboard/page.tsx  # Dashboard with greeting, picked looks, category cards, build CTA
+    dashboard/page.tsx  # Dashboard with greeting, PickedForYou (client), category cards, build CTA
     dashboard/DashboardGreeting.tsx  # Client component: time-of-day greeting
     explore/page.tsx    # Explore looks with category tabs, filters, look grid (server)
     explore/[category]/page.tsx  # Redirects to /explore?category=X
@@ -54,6 +54,7 @@ components/
     PieceCard.tsx       # Piece card with brand/name/price, metadata, add to bag
     AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state
     ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
+    PickedForYou.tsx    # Client: reads survey lifestyle from localStorage, fetches filtered looks from Supabase
     DashboardWelcome.tsx # Client: full-screen first-time welcome overlay (lifestyle tags, Build/Dashboard CTAs)
 lib/
   supabase.ts           # Browser Supabase client

@@ -215,7 +215,7 @@ export default async function LookDetailPage({
           data-testid="pieces-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
             gap: 20,
           }}
         >
