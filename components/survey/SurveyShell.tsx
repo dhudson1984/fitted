@@ -79,8 +79,11 @@ export default function SurveyShell() {
 
   const handleFinish = useCallback(() => {
     try {
+      const basicsData = selections["basics-1"] as { firstName?: string } | undefined;
+      const firstName = (basicsData?.firstName || "").trim();
       localStorage.setItem("fitted_survey", JSON.stringify({
         ...selections,
+        firstName,
         lifestyle: Array.from(lifestyle),
         completedAt: new Date().toISOString(),
       }));
@@ -293,7 +296,8 @@ export default function SurveyShell() {
               {step.type === "basics" && (
                 <StepBasics
                   data={
-                    (selections[step.id] as { ageRange: string; budgetMin: string; budgetMax: string }) || {
+                    (selections[step.id] as { firstName: string; ageRange: string; budgetMin: string; budgetMax: string }) || {
+                      firstName: "",
                       ageRange: "",
                       budgetMin: "",
                       budgetMax: "",

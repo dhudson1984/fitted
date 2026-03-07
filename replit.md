@@ -44,7 +44,7 @@ components/
     StepPalette.tsx     # Color palette swatch picker (3-col grid)
     StepAvoid.tsx       # Avoid items grid + "I Trust My Stylist" toggle
     StepSizing.tsx      # Body type, height/weight, shirt/pants/shoe sizing
-    StepBasics.tsx      # Age range chips + budget min/max inputs
+    StepBasics.tsx      # First name input, age range chips + budget min/max inputs
     StepBrands.tsx      # Brand search input + suggestion chips
     StepSwipe.tsx       # Look rating cards with like/pass buttons
   app/
@@ -101,7 +101,7 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 ## Database (Supabase)
 Tables: `looks`, `pieces`, `look_pieces` (join), `user_profiles`, `saved_looks`
 Schema defined in the build briefing — must be created via Supabase SQL Editor.
-Seeded with 27 looks, 23 pieces, 52 look-piece relationships.
+Re-seeded from fitted-catalog.xlsx with 12 looks, 39 pieces, 59 look-piece relationships.
 - `looks.image_url` (text, nullable) — Supabase Storage URLs for look images. Used on look cards (LookCard), landing featured looks, and look detail hero. Falls back to gradient when null/empty.
 
 ## Reference Documents

@@ -22,7 +22,7 @@ function getName(): string {
     const survey = localStorage.getItem("fitted_survey");
     if (survey) {
       const parsed = JSON.parse(survey);
-      if (parsed.name) return parsed.name;
+      if (parsed.firstName) return parsed.firstName;
     }
   } catch {}
   return "there";

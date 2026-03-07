@@ -1,6 +1,7 @@
 "use client";
 
 interface BasicsData {
+  firstName: string;
   ageRange: string;
   budgetMin: string;
   budgetMax: string;
@@ -20,6 +21,20 @@ export default function StepBasics({ data, onChange }: StepBasicsProps) {
 
   return (
     <div className="max-w-xl space-y-8" data-testid="step-basics" style={{ animation: "fadeUp 0.4s ease both" }}>
+      <div>
+        <label className="block text-[13px] font-medium text-muted mb-3">First Name</label>
+        <input
+          type="text"
+          placeholder="Your first name"
+          value={data.firstName}
+          onChange={(e) => update("firstName", e.target.value)}
+          data-testid="input-first-name"
+          className="w-64 px-4 py-3 rounded-md border border-sand bg-transparent text-charcoal text-[15px] focus:outline-none focus:border-charcoal transition-colors"
+          style={{ borderWidth: "1.5px" }}
+          autoComplete="given-name"
+        />
+      </div>
+
       <div>
         <label className="block text-[13px] font-medium text-muted mb-3">Age Range</label>
         <div className="flex gap-3 flex-wrap">
