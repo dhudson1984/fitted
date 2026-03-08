@@ -24,7 +24,7 @@ app/
     explore/page.tsx    # Explore looks with category tabs, filters, look grid (server)
     explore/[category]/page.tsx  # Redirects to /explore?category=X
     looks/[slug]/page.tsx  # Look detail: pieces, styling notes, related looks (server)
-    build/page.tsx      # Placeholder
+    build/page.tsx      # Build a Look: 3-screen flow (upload, analyzing, results) with OpenAI GPT-4o vision
     profile/page.tsx    # Placeholder
 components/
   AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
@@ -90,6 +90,10 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 ## Environment Variables
 - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous/public key
+- `OPENAI_API_KEY` — OpenAI API key for GPT-4o vision (Build a Look feature)
+
+## API Routes
+- `POST /api/analyze-outfit` — Accepts multipart form image, sends to GPT-4o vision for outfit analysis, queries Supabase pieces table for matches by slot type and color
 
 ## Running
 - Dev server: `npx next dev -p 5000 -H 0.0.0.0`
