@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { getLooks, getFilterOptions } from "@/lib/data";
 import LookCard from "@/components/app/LookCard";
 import ExploreFilters from "@/components/app/ExploreFilters";
+
+export const metadata: Metadata = {
+  title: "Explore Looks — Curated Outfits",
+  description: "Browse curated men's outfit looks across smart casual, work, athletic, and night out categories. Filter by vibe, occasion, and season.",
+};
 
 const CATEGORIES = ["All", "Smart Casual", "Work", "Athletic & Outdoors", "Night Out"];
 

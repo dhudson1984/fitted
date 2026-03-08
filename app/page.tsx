@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase-server";
 import LandingNav from "@/components/landing/LandingNav";
 import HeroSlideshow from "@/components/landing/HeroSlideshow";
 import ScrollReveal from "@/components/landing/ScrollReveal";
+
+export const metadata: Metadata = {
+  title: "Fitted — Men's Style, Curated",
+  description: "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple. Complete a style profile and discover curated looks.",
+  openGraph: {
+    title: "Fitted — Men's Style, Curated",
+    description: "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple.",
+    type: "website",
+    siteName: "Fitted",
+  },
+  twitter: {
+    card: "summary",
+    title: "Fitted — Men's Style, Curated",
+    description: "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple.",
+  },
+};
 
 interface Look {
   id: string;
@@ -51,17 +68,6 @@ const testimonials = [
     author: "Daniel K., 38 — Los Angeles",
   },
 ];
-
-export const metadata = {
-  title: "Fitted — Your Personal Virtual Stylist",
-  description: "Curated men's outfit recommendations with shoppable affiliate-linked pieces. Take the style profile, build your first look, and see what Fitted finds for you.",
-  openGraph: {
-    title: "Fitted — Your Personal Virtual Stylist",
-    description: "Curated men's outfit recommendations with shoppable affiliate-linked pieces. Take the style profile, build your first look, and see what Fitted finds for you.",
-    type: "website",
-    siteName: "Fitted",
-  },
-};
 
 export default async function LandingPage() {
   let looks: Look[] = [];

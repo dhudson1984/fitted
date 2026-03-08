@@ -99,6 +99,14 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 - Dev server: `npx next dev -p 5000 -H 0.0.0.0`
 - The workflow "Start application" runs the dev server on port 5000
 
+## Analytics & SEO
+- **Vercel Analytics**: `@vercel/analytics` installed, `<Analytics />` in root layout
+- **SEO metadata**: Each page exports a `metadata` object or `generateMetadata` function; root layout uses `title.template: "%s | Fitted"`
+- **Look page OG tags**: Dynamic `generateMetadata` with OG image, Twitter card, description with brands/category
+- **Sitemap**: `app/sitemap.ts` — auto-generated from Supabase looks table + static pages
+- **Robots**: `app/robots.ts` — allows all crawlers, disallows /api/ and /onboarding
+- **Affiliate tracking**: `lib/analytics.ts` — `trackAffiliateClick({ pieceId, retailer, lookSlug })` fires on retailer link clicks via `@vercel/analytics` `track()`
+
 ## Config Notes
 - `package.json` has `"type": "module"` — use `.mjs` for ESM configs, `.cjs` for CommonJS
 - `next.config.mjs` (ESM), `postcss.config.cjs` (CommonJS)

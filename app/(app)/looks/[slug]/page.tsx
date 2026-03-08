@@ -1,9 +1,39 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getLookBySlug, getRelatedLooks, getGradient } from "@/lib/data";
 import PieceCard from "@/components/app/PieceCard";
 import LookCard from "@/components/app/LookCard";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const look = await getLookBySlug(params.slug);
+  if (!look) return { title: "Look Not Found" };
+
+  const brands = [...new Set(look.pieces.map((p) => p.brand))].slice(0, 3).join(", ");
+  const description = `Shop this ${look.category.toLowerCase()} outfit featuring ${brands}. ${look.pieces.length} curated pieces styled for ${look.occasion.toLowerCase()}.`;
+
+  return {
+    title: `${look.name} — ${look.category} Outfit`,
+    description,
+    openGraph: {
+      title: `${look.name} — ${look.category} Outfit | Fitted`,
+      description,
+      type: "article",
+      ...(look.image_url ? { images: [{ url: look.image_url, width: 1200, height: 630, alt: look.name }] } : {}),
+    },
+    twitter: {
+      card: look.image_url ? "summary_large_image" : "summary",
+      title: `${look.name} — ${look.category} Outfit | Fitted`,
+      description,
+      ...(look.image_url ? { images: [look.image_url] } : {}),
+    },
+  };
+}
 
 function generateStylingNotes(look: { name: string; category: string; vibe: string; occasion: string; season: string; pieces: { name: string; slot_type: string; brand: string; color: string; material: string }[] }): string {
   const pieceNames = look.pieces.map((p) => p.name).slice(0, 3);
@@ -220,7 +250,7 @@ export default async function LookDetailPage({
           }}
         >
           {look.pieces.map((piece) => (
-            <PieceCard key={piece.id} piece={piece} lookName={look.name} />
+            <PieceCard key={piece.id} piece={piece} lookName={look.name} lookSlug={look.slug} />
           ))}
         </div>
       </div>

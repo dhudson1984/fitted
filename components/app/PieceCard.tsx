@@ -2,11 +2,13 @@
 
 import { ExternalLink } from "lucide-react";
 import type { Piece } from "@/lib/types";
+import { trackAffiliateClick } from "@/lib/analytics";
 import AddToBagButton from "./AddToBagButton";
 
 interface PieceCardProps {
   piece: Piece & { sort_order: number };
   lookName: string;
+  lookSlug?: string;
 }
 
 const SLOT_LABELS: Record<string, string> = {
@@ -22,7 +24,7 @@ const SLOT_LABELS: Record<string, string> = {
   layer: "Layer",
 };
 
-export default function PieceCard({ piece, lookName }: PieceCardProps) {
+export default function PieceCard({ piece, lookName, lookSlug }: PieceCardProps) {
   const slotLabel = SLOT_LABELS[piece.slot_type] || piece.slot_type;
 
   return (
@@ -184,6 +186,13 @@ export default function PieceCard({ piece, lookName }: PieceCardProps) {
             href={piece.retailer_url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+              trackAffiliateClick({
+                pieceId: piece.id,
+                retailer: piece.retailer,
+                lookSlug: lookSlug || "direct",
+              });
+            }}
             style={{
               display: "flex",
               alignItems: "center",

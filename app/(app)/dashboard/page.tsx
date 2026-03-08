@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getCategoryCounts } from "@/lib/data";
 import DashboardWelcome from "@/components/app/DashboardWelcome";
 import CategoryCard from "@/components/app/CategoryCard";
@@ -5,6 +6,11 @@ import PickedForYou from "@/components/app/PickedForYou";
 import DashboardGreeting from "./DashboardGreeting";
 import Link from "next/link";
 import { ArrowRight, Wand2 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Dashboard — Your Style Home",
+  description: "Your personalized Fitted dashboard. Browse curated outfit categories, see looks picked for you, and start building your wardrobe.",
+};
 
 export default async function DashboardPage() {
   const categoryCounts = await getCategoryCounts();

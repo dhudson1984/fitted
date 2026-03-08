@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -18,9 +19,19 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Fitted — Men's Style, Curated",
+  title: {
+    default: "Fitted — Men's Style, Curated",
+    template: "%s | Fitted",
+  },
   description:
     "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fitted.replit.app"),
+  openGraph: {
+    type: "website",
+    siteName: "Fitted",
+    title: "Fitted — Men's Style, Curated",
+    description: "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple.",
+  },
 };
 
 export default function RootLayout({
@@ -30,7 +41,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
