@@ -25,7 +25,7 @@ app/
     explore/[category]/page.tsx  # Redirects to /explore?category=X
     looks/[slug]/page.tsx  # Look detail: pieces, styling notes, related looks (server)
     build/page.tsx      # Build a Look: 3-screen flow (upload, analyzing, results) with OpenAI GPT-4o vision
-    profile/page.tsx    # Placeholder
+    profile/page.tsx    # User profile: name, email, style prefs from localStorage survey, sizing, budget, saved looks from Supabase
 components/
   AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
   MobileMenuDrawer.tsx  # Slide-in mobile menu from left
