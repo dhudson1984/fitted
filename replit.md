@@ -24,8 +24,8 @@ app/
     explore/page.tsx    # Explore looks with category tabs, filters, look grid (server)
     explore/[category]/page.tsx  # Redirects to /explore?category=X
     looks/[slug]/page.tsx  # Look detail: pieces, styling notes, related looks (server)
-    build/page.tsx      # Build a Look: 3-screen flow (upload, analyzing, results) with OpenAI GPT-4o vision
-    profile/page.tsx    # User profile: name, email, style prefs from localStorage survey, sizing, budget, saved looks from Supabase
+    build/page.tsx      # Build a Look: 3-screen flow (upload, analyzing, results) with OpenAI GPT-4o vision; results redesigned with gradient hero, PieceCard grid, "What We Detected" notes; Save This Look button stores to localStorage fitted_builds
+    profile/page.tsx    # User profile: name, email, style prefs from localStorage survey, sizing, budget, saved looks from Supabase + user builds from localStorage; BuildCard component for user-created builds
 components/
   AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
   MobileMenuDrawer.tsx  # Slide-in mobile menu from left

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Upload, ArrowLeft, ShoppingBag, Check, Shirt, Search, Palette, ScanLine, Watch } from "lucide-react";
+import { Upload, ArrowLeft, ShoppingBag, Check, Shirt, Search, Palette, ScanLine, Watch, Bookmark } from "lucide-react";
 import { useBag } from "@/components/providers/BagProvider";
+import PieceCard from "@/components/app/PieceCard";
 import type { Piece } from "@/lib/types";
 
 type Screen = "upload" | "analyzing" | "results";
@@ -494,336 +495,108 @@ function ResultsScreen({
   pieces: MatchedPieces;
   onTryAgain: () => void;
 }) {
+  const [saved, setSaved] = useState(false);
   const slotTypes = ["shirt", "pants", "shoes", "jacket", "accessory"];
+  const matchedPieces = slotTypes
+    .map((slot, i) => {
+      const p = pieces[slot] as Piece | null;
+      return p ? { ...p, sort_order: i } : null;
+    })
+    .filter(Boolean) as (Piece & { sort_order: number })[];
+
+  const emptySlots = slotTypes.filter((s) => !pieces[s]);
+
+  const handleSave = () => {
+    if (saved) return;
+    const dateStr = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const build = {
+      id: `build-${Date.now()}`,
+      name: `My Build — ${dateStr}`,
+      pieceIds: matchedPieces.map((p) => p.id),
+      pieces: matchedPieces.map((p) => ({
+        id: p.id,
+        brand: p.brand,
+        name: p.name,
+        price: p.price,
+        price_display: p.price_display,
+        slot_type: p.slot_type,
+        color: p.color,
+      })),
+      analysis: analysis ? { formality: analysis.formality, vibe: analysis.vibe, colors: analysis.dominant_colors } : null,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      const existing = JSON.parse(localStorage.getItem("fitted_builds") || "[]");
+      existing.unshift(build);
+      localStorage.setItem("fitted_builds", JSON.stringify(existing));
+    } catch {}
+    setSaved(true);
+  };
+
+  const tags = [
+    ...(analysis?.formality ? [{ label: analysis.formality, type: "formality" }] : []),
+    ...(analysis?.vibe ? [{ label: analysis.vibe, type: "vibe" }] : []),
+  ];
 
   return (
-    <div
+    <main
       data-testid="screen-results"
-      style={{ padding: "40px", maxWidth: 1200, margin: "0 auto" }}
+      className="min-h-screen"
+      style={{ background: "var(--warm-white)" }}
     >
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          marginBottom: 40,
-          gap: 24,
-          flexWrap: "wrap",
+          borderBottom: "1px solid var(--sand)",
+          background: "var(--warm-white)",
+          position: "sticky",
+          top: "var(--nav-h)",
+          zIndex: 50,
         }}
       >
-        <div>
-          <h2
-            style={{
-              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-              fontSize: "clamp(28px, 3vw, 42px)",
-              fontWeight: 300,
-              lineHeight: 1.1,
-              marginBottom: 6,
-            }}
-          >
-            Your Look, Built.
-          </h2>
-          <p style={{ fontSize: 13, fontWeight: 300, color: "var(--muted)" }}>
-            We matched pieces based on your outfit&apos;s style, colors, and vibe.
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 12, flexShrink: 0 }}>
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "14px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
           <button
             data-testid="button-try-again"
             onClick={onTryAgain}
             style={{
-              padding: "12px 24px",
-              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              border: "1.5px solid var(--sand)",
-              background: "var(--warm-white)",
-              color: "var(--charcoal)",
               display: "flex",
               alignItems: "center",
               gap: 6,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--stone)";
-              e.currentTarget.style.background = "var(--cream)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--sand)";
-              e.currentTarget.style.background = "var(--warm-white)";
-            }}
-          >
-            <ArrowLeft size={14} /> Try Another
-          </button>
-        </div>
-      </div>
-
-      {analysis && (
-        <div
-          data-testid="analysis-summary"
-          style={{ display: "flex", gap: 16, marginBottom: 40, flexWrap: "wrap" }}
-        >
-          {analysis.formality && (
-            <span
-              data-testid="text-formality"
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "var(--bark)",
-                background: "var(--cream)",
-                padding: "6px 14px",
-                border: "1px solid var(--sand)",
-              }}
-            >
-              {analysis.formality}
-            </span>
-          )}
-          {analysis.vibe && (
-            <span
-              data-testid="text-vibe"
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "var(--bark)",
-                background: "var(--cream)",
-                padding: "6px 14px",
-                border: "1px solid var(--sand)",
-              }}
-            >
-              {analysis.vibe}
-            </span>
-          )}
-          {analysis.dominant_colors?.map((color, i) => (
-            <span
-              key={i}
-              data-testid={`text-color-${i}`}
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "var(--muted)",
-                background: "var(--warm-white)",
-                padding: "6px 14px",
-                border: "1px solid var(--sand)",
-              }}
-            >
-              {color}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-        {slotTypes.map((slot) => {
-          const piece = pieces[slot] as Piece | null;
-          return <SlotSection key={slot} slot={slot} piece={piece} />;
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SlotSection({ slot, piece }: { slot: string; piece: Piece | null }) {
-  return (
-    <div data-testid={`section-${slot}`} style={{ animation: "fadeUp 0.5s ease forwards" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          paddingBottom: 12,
-          borderBottom: "1px solid var(--sand)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {(() => { const IconComp = SLOT_ICON_COMPONENTS[slot]; return IconComp ? <IconComp size={16} style={{ color: "var(--bark)" }} /> : null; })()}
-          <span
-            style={{
-              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-              fontSize: 20,
-              fontWeight: 400,
-            }}
-          >
-            {SLOT_LABELS[slot] || slot}
-          </span>
-        </div>
-        <span style={{ fontSize: 11, color: "var(--muted)" }}>
-          {piece ? "1 match" : "No match"}
-        </span>
-      </div>
-
-      {piece ? <ResultPieceCard piece={piece} /> : <PlaceholderCard slot={slot} />}
-    </div>
-  );
-}
-
-function ResultPieceCard({ piece }: { piece: Piece }) {
-  const { addItem, items } = useBag();
-  const isInBag = items.some((i) => i.id === piece.id);
-  const [justAdded, setJustAdded] = useState(false);
-  const added = isInBag || justAdded;
-
-  const handleAdd = () => {
-    if (added) return;
-    addItem({
-      id: piece.id,
-      brand: piece.brand,
-      name: piece.name,
-      price: piece.price,
-      priceStr: piece.price_display,
-      retailer: piece.retailer,
-      look: "Build a Look",
-    });
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2000);
-  };
-
-  const slotLabel = SLOT_LABELS[piece.slot_type] || piece.slot_type;
-
-  return (
-    <div
-      data-testid={`card-piece-${piece.id}`}
-      style={{
-        background: "var(--warm-white)",
-        border: "1.5px solid var(--sand)",
-        display: "grid",
-        gridTemplateColumns: "200px 1fr",
-        transition: "all 0.25s",
-        maxWidth: 700,
-      }}
-    >
-      <div
-        style={{
-          aspectRatio: "3/4",
-          background: "var(--cream)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 10,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--stone)",
-            fontWeight: 500,
-          }}
-        >
-          {slotLabel}
-        </div>
-      </div>
-
-      <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            marginBottom: 4,
-          }}
-        >
-          <div
-            data-testid={`text-brand-${piece.id}`}
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "var(--bark)",
-              fontWeight: 500,
-            }}
-          >
-            {piece.brand}
-          </div>
-          <div
-            data-testid={`text-slot-${piece.id}`}
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
               color: "var(--muted)",
-              background: "var(--cream)",
-              padding: "2px 8px",
-              fontWeight: 500,
+              background: "none",
+              border: "none",
+              fontSize: 12,
+              fontWeight: 400,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "color 0.2s",
+              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
             }}
           >
-            {slotLabel}
-          </div>
-        </div>
+            <ArrowLeft size={16} />
+            Build Another
+          </button>
 
-        <div
-          data-testid={`text-name-${piece.id}`}
-          style={{
-            fontSize: 15,
-            fontWeight: 400,
-            color: "var(--charcoal)",
-            marginBottom: 6,
-            lineHeight: 1.4,
-          }}
-        >
-          {piece.name}
-        </div>
-
-        <div
-          data-testid={`text-price-${piece.id}`}
-          style={{
-            fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-            fontSize: 22,
-            fontWeight: 300,
-            color: "var(--charcoal)",
-            marginBottom: 12,
-          }}
-        >
-          {piece.price_display}
-        </div>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-          {piece.color && (
-            <span
-              data-testid={`text-color-${piece.id}`}
-              style={{
-                fontSize: 10,
-                color: "var(--muted)",
-                background: "var(--cream)",
-                padding: "3px 8px",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {piece.color}
-            </span>
-          )}
-          {piece.material && (
-            <span
-              data-testid={`text-material-${piece.id}`}
-              style={{
-                fontSize: 10,
-                color: "var(--muted)",
-                background: "var(--cream)",
-                padding: "3px 8px",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {piece.material}
-            </span>
-          )}
-        </div>
-
-        <div style={{ marginTop: "auto" }}>
           <button
-            data-testid={`button-add-to-bag-${piece.id}`}
-            onClick={handleAdd}
-            disabled={added}
+            data-testid="button-save-look"
+            onClick={handleSave}
+            disabled={saved || matchedPieces.length === 0}
             style={{
-              width: "100%",
-              padding: "11px 16px",
-              background: added ? "var(--stone)" : "var(--charcoal)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 20px",
+              background: saved ? "var(--stone)" : "var(--charcoal)",
               color: "var(--cream)",
               border: "none",
               fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
@@ -831,69 +604,262 @@ function ResultPieceCard({ piece }: { piece: Piece }) {
               fontWeight: 500,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              cursor: added ? "default" : "pointer",
+              cursor: saved ? "default" : "pointer",
               transition: "background 0.2s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              opacity: added ? 0.8 : 1,
+              opacity: saved ? 0.8 : matchedPieces.length === 0 ? 0.4 : 1,
             }}
             onMouseEnter={(e) => {
-              if (!added) e.currentTarget.style.background = "var(--bark)";
+              if (!saved && matchedPieces.length > 0) e.currentTarget.style.background = "var(--bark)";
             }}
             onMouseLeave={(e) => {
-              if (!added) e.currentTarget.style.background = "var(--charcoal)";
+              if (!saved && matchedPieces.length > 0) e.currentTarget.style.background = "var(--charcoal)";
             }}
           >
-            {added ? (
-              <>
-                <Check size={14} />
-                In Bag
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={14} />
-                Add to Bag
-              </>
-            )}
+            {saved ? <Check size={14} /> : <Bookmark size={14} />}
+            {saved ? "Look Saved" : "Save This Look"}
           </button>
         </div>
       </div>
-    </div>
+
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(165deg, #5C5A6E 0%, #3A3848 40%, #1E1C28 100%)",
+          padding: "48px 24px 56px",
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, rgba(26,26,24,0.7) 0%, rgba(26,26,24,0.3) 60%, transparent 100%)",
+          }}
+        />
+        <div
+          className="relative"
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            zIndex: 1,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+              color: "rgba(250,247,242,0.5)",
+              marginBottom: 12,
+            }}
+          >
+            Your Build
+          </div>
+          <h1
+            data-testid="text-results-title"
+            style={{
+              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+              fontSize: "clamp(32px, 5vw, 48px)",
+              fontWeight: 300,
+              color: "rgba(250,247,242,0.95)",
+              lineHeight: 1.15,
+              marginBottom: 20,
+            }}
+          >
+            Your Look, Built.
+          </h1>
+
+          {tags.length > 0 && (
+            <div
+              data-testid="analysis-summary"
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+              }}
+            >
+              {tags.map((tag) => (
+                <span
+                  key={tag.type}
+                  data-testid={`badge-${tag.type}`}
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    fontWeight: 500,
+                    color: "rgba(250,247,242,0.9)",
+                    background: "rgba(250,247,242,0.18)",
+                    padding: "5px 12px",
+                    borderRadius: 3,
+                  }}
+                >
+                  {tag.label}
+                </span>
+              ))}
+              {analysis?.dominant_colors?.map((color, i) => (
+                <span
+                  key={i}
+                  data-testid={`badge-color-${i}`}
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    fontWeight: 500,
+                    color: "rgba(250,247,242,0.6)",
+                    background: "rgba(250,247,242,0.08)",
+                    padding: "5px 12px",
+                    borderRadius: 3,
+                  }}
+                >
+                  {color}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "48px 24px",
+        }}
+      >
+        <div style={{ marginBottom: 12 }}>
+          <h2
+            data-testid="text-pieces-heading"
+            style={{
+              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+              fontSize: 24,
+              fontWeight: 300,
+              color: "var(--charcoal)",
+              marginBottom: 4,
+            }}
+          >
+            The Pieces
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              fontWeight: 300,
+              color: "var(--muted)",
+              marginBottom: 24,
+            }}
+          >
+            {matchedPieces.length} item{matchedPieces.length !== 1 ? "s" : ""} matched to your outfit
+            {emptySlots.length > 0 && ` · ${emptySlots.length} slot${emptySlots.length !== 1 ? "s" : ""} pending`}
+          </p>
+        </div>
+
+        <div
+          data-testid="pieces-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 20,
+          }}
+        >
+          {matchedPieces.map((piece) => (
+            <PieceCard key={piece.id} piece={piece} lookName="Build a Look" />
+          ))}
+          {emptySlots.map((slot) => (
+            <PlaceholderCard key={slot} slot={slot} />
+          ))}
+        </div>
+      </div>
+
+      {analysis && (
+        <div
+          style={{
+            background: "var(--cream)",
+            padding: "48px 24px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 800,
+              margin: "0 auto",
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                fontSize: 24,
+                fontWeight: 300,
+                color: "var(--charcoal)",
+                marginBottom: 16,
+              }}
+            >
+              What We Detected
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {analysis.garments?.length > 0 && (
+                <p
+                  data-testid="text-detected-garments"
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 300,
+                    color: "var(--charcoal)",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  We identified{" "}
+                  {analysis.garments.map((g) => g.description || g.type).join(", ").toLowerCase()}{" "}
+                  in your image and matched {matchedPieces.length > 0 ? "similar pieces" : "what we could"} from our catalog.
+                </p>
+              )}
+              {analysis.dominant_colors?.length > 0 && (
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 300,
+                    color: "var(--charcoal)",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  The dominant colour palette leans{" "}
+                  {analysis.dominant_colors.slice(0, 3).join(", ").toLowerCase()},{" "}
+                  giving the look a {analysis.vibe?.toLowerCase() || "balanced"} feel.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
 
 function PlaceholderCard({ slot }: { slot: string }) {
+  const IconComp = SLOT_ICON_COMPONENTS[slot];
   return (
     <div
       data-testid={`card-placeholder-${slot}`}
       style={{
         background: "var(--cream)",
         border: "1.5px dashed var(--sand)",
-        padding: "40px 24px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 12,
-        maxWidth: 700,
+        gap: 10,
+        aspectRatio: "4/5",
       }}
     >
-      {(() => { const IconComp = SLOT_ICON_COMPONENTS[slot]; return IconComp ? <IconComp size={28} style={{ color: "var(--stone)", opacity: 0.3 }} /> : null; })()}
+      {IconComp && <IconComp size={24} style={{ color: "var(--stone)", opacity: 0.35 }} />}
       <p
         style={{
-          fontSize: 13,
+          fontSize: 12,
           color: "var(--muted)",
           fontWeight: 300,
           textAlign: "center",
+          padding: "0 16px",
         }}
       >
-        No matching {SLOT_LABELS[slot]?.toLowerCase() || slot} found in our catalog
+        No matching {SLOT_LABELS[slot]?.toLowerCase() || slot} found
       </p>
       <p
         style={{
-          fontSize: 11,
+          fontSize: 10,
           color: "var(--stone)",
           letterSpacing: "0.08em",
           textTransform: "uppercase",

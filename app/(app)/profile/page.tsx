@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, RefreshCw } from "lucide-react";
+import { User, Settings, RefreshCw, Wand2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Look } from "@/lib/types";
-import { getGradient } from "@/lib/types";
+import LookCard from "@/components/app/LookCard";
 
 interface SurveyData {
   firstName?: string;
@@ -30,16 +30,31 @@ interface LookWithPieceCount extends Look {
   pieceCount: number;
 }
 
+interface SavedBuild {
+  id: string;
+  name: string;
+  pieceIds: string[];
+  pieces: { id: string; brand: string; name: string; slot_type: string; color?: string }[];
+  analysis: { formality?: string; vibe?: string; colors?: string[] } | null;
+  createdAt: string;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [survey, setSurvey] = useState<SurveyData | null>(null);
   const [savedLooks, setSavedLooks] = useState<LookWithPieceCount[]>([]);
+  const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("fitted_survey");
       if (raw) setSurvey(JSON.parse(raw));
+    } catch {}
+
+    try {
+      const buildsRaw = localStorage.getItem("fitted_builds");
+      if (buildsRaw) setSavedBuilds(JSON.parse(buildsRaw));
     } catch {}
 
     async function fetchLooks() {
@@ -176,7 +191,7 @@ export default function ProfilePage() {
                   lineHeight: 1,
                 }}
               >
-                {savedLooks.length}
+                {savedLooks.length + savedBuilds.length}
               </div>
               <div
                 style={{
@@ -435,7 +450,7 @@ export default function ProfilePage() {
             <RefreshCw size={16} style={{ animation: "spin 1s linear infinite", marginRight: 8 }} />
             Loading...
           </div>
-        ) : savedLooks.length > 0 ? (
+        ) : (savedLooks.length > 0 || savedBuilds.length > 0) ? (
           <div
             style={{
               display: "grid",
@@ -443,9 +458,13 @@ export default function ProfilePage() {
               gap: 14,
               marginBottom: 16,
             }}
+            className="max-md:!grid-cols-2"
           >
+            {savedBuilds.map((build) => (
+              <BuildCard key={build.id} build={build} />
+            ))}
             {savedLooks.map((look) => (
-              <LookCard key={look.id} look={look} />
+              <LookCard key={look.id} look={look} pieceCount={look.pieceCount} />
             ))}
           </div>
         ) : (
@@ -459,7 +478,7 @@ export default function ProfilePage() {
               fontWeight: 300,
             }}
           >
-            No saved looks yet. Explore looks to get started.
+            No saved looks yet. Explore looks or build your own to get started.
           </div>
         )}
       </ProfileSection>
@@ -685,13 +704,17 @@ function Divider() {
   return <div style={{ height: 1, background: "var(--sand)", marginBottom: 56 }} />;
 }
 
-function LookCard({ look }: { look: LookWithPieceCount }) {
-  const gradient = getGradient(look);
+function BuildCard({ build }: { build: SavedBuild }) {
+  const dateStr = new Date(build.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const brandList = [...new Set(build.pieces.map((p) => p.brand))].slice(0, 2).join(", ");
 
   return (
     <Link
-      href={`/looks/${look.slug}`}
-      data-testid={`card-look-${look.id}`}
+      href="/build"
+      data-testid={`card-build-${build.id}`}
       style={{
         cursor: "pointer",
         transition: "transform 0.2s",
@@ -701,72 +724,86 @@ function LookCard({ look }: { look: LookWithPieceCount }) {
     >
       <div
         style={{
-          aspectRatio: "4/3",
+          height: 280,
+          borderRadius: 6,
           position: "relative",
           overflow: "hidden",
           marginBottom: 10,
+          background: "linear-gradient(165deg, #5C5A6E 0%, #3A3848 40%, #1E1C28 100%)",
+          padding: "18px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
         }}
       >
-        {look.image_url ? (
-          <img
-            src={look.image_url}
-            alt={look.name}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transition: "transform 0.4s",
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: gradient,
-              transition: "transform 0.4s",
-            }}
-          />
-        )}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to top, rgba(26,26,24,0.65) 0%, transparent 50%)",
-            padding: 14,
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 6,
           }}
         >
           <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
               fontSize: 9,
               letterSpacing: "0.14em",
               textTransform: "uppercase",
-              color: "var(--stone)",
-              marginBottom: 3,
+              fontWeight: 500,
+              color: "rgba(250,247,242,0.85)",
+              background: "rgba(250,247,242,0.18)",
+              padding: "4px 10px",
+              borderRadius: 3,
             }}
           >
-            {look.category}
+            <Wand2 size={10} />
+            Your Build
           </div>
+        </div>
+
+        <div>
+          {build.analysis?.vibe && (
+            <div
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(250,247,242,0.5)",
+                marginBottom: 6,
+              }}
+            >
+              {build.analysis.vibe}
+            </div>
+          )}
           <div
             style={{
               fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
               fontSize: 16,
               fontWeight: 400,
-              color: "var(--cream)",
+              color: "rgba(250,247,242,0.95)",
+              lineHeight: 1.3,
+              marginBottom: 6,
             }}
           >
-            {look.name}
+            {build.name}
           </div>
+          {brandList && (
+            <div
+              style={{
+                fontSize: 10,
+                color: "rgba(250,247,242,0.45)",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {brandList}
+            </div>
+          )}
         </div>
       </div>
       <div style={{ fontSize: 11, fontWeight: 300, color: "var(--muted)" }}>
-        {look.pieceCount} pieces
+        {build.pieces.length} pieces · {dateStr}
       </div>
     </Link>
   );
