@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingBag, ArrowLeft, User, Heart, LogOut } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+
 
 interface AppNavProps {
   bagCount?: number;
@@ -36,19 +36,7 @@ export default function AppNav({
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  const [logoHref, setLogoHref] = useState("/");
-
-  useEffect(() => {
-    let authenticated = false;
-    try {
-      const survey = localStorage.getItem("fitted_survey");
-      if (survey) authenticated = true;
-    } catch {}
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) authenticated = true;
-      setLogoHref(authenticated ? "/dashboard" : "/");
-    });
-  }, []);
+  const logoHref = "/";
 
   const breadcrumb = Object.entries(BREADCRUMB_MAP).find(([prefix]) =>
     pathname.startsWith(prefix)

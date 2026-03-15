@@ -1,28 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 
 export default function LookBackNav() {
-  const [backHref, setBackHref] = useState("/");
-  const [backLabel, setBackLabel] = useState("Back to Home");
-
-  useEffect(() => {
-    let authenticated = false;
-    try {
-      const survey = localStorage.getItem("fitted_survey");
-      if (survey) authenticated = true;
-    } catch {}
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) authenticated = true;
-      if (authenticated) {
-        setBackHref("/explore");
-        setBackLabel("Back to Explore");
-      }
-    });
-  }, []);
+  const backHref = "/";
+  const backLabel = "Back to Home";
 
   return (
     <div
