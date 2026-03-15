@@ -5,7 +5,6 @@ import type { NextRequest } from "next/server";
 const protectedPaths = [
   "/dashboard",
   "/explore",
-  "/looks",
   "/build",
   "/profile",
   "/lookboard",
@@ -40,8 +39,8 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !session && process.env.NODE_ENV === "production") {
-    const redirectUrl = new URL("/", req.url);
+  if (isProtected && !session) {
+    const redirectUrl = new URL("/onboarding", req.url);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -52,7 +51,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/explore/:path*",
-    "/looks/:path*",
     "/build/:path*",
     "/profile/:path*",
     "/lookboard/:path*",

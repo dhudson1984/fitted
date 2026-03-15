@@ -20,7 +20,7 @@ const BREADCRUMB_MAP: Record<string, { back: string; backLabel: string; crumb: s
   "/build": { back: "/dashboard", backLabel: "Dashboard", crumb: "Build a Look" },
   "/profile": { back: "/dashboard", backLabel: "Dashboard", crumb: "Profile" },
   "/looks": { back: "/explore", backLabel: "Explore", crumb: "Look Detail" },
-  "/lookboard": { back: "/dashboard", backLabel: "Dashboard", crumb: "Lookboard" },
+  "/lookboard": { back: "/dashboard", backLabel: "Dashboard", crumb: "Saved Looks" },
 };
 
 export default function AppNav({
@@ -173,13 +173,13 @@ export default function AppNav({
               My Bag
             </button>
             <Link
-              href="/dashboard"
-              data-testid="link-profile-my-lookboard"
+              href="/lookboard"
+              data-testid="link-profile-saved-looks"
               className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
               onClick={() => setProfileOpen(false)}
             >
               <Heart className="w-3 h-3 opacity-60" />
-              My Lookboard
+              Saved Looks
             </Link>
 
             <div className="h-px bg-sand" />

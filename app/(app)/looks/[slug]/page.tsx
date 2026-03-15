@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getLookBySlug, getRelatedLooks, getGradient } from "@/lib/data";
 import PieceCard from "@/components/app/PieceCard";
 import LookCard from "@/components/app/LookCard";
+import SaveLookButton from "@/components/app/SaveLookButton";
 
 export async function generateMetadata({
   params,
@@ -216,6 +217,10 @@ export default async function LookDetailPage({
           padding: "48px 24px",
         }}
       >
+        <div style={{ maxWidth: 280, marginBottom: 32 }}>
+          <SaveLookButton lookSlug={look.slug} lookName={look.name} />
+        </div>
+
         <div style={{ marginBottom: 12 }}>
           <h2
             data-testid="text-pieces-heading"

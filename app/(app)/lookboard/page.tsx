@@ -9,7 +9,7 @@ export default function LookboardPage() {
         style={{ color: "var(--charcoal)" }}
         data-testid="text-page-title"
       >
-        My Lookboard
+        Saved Looks
       </h1>
     </main>
   );

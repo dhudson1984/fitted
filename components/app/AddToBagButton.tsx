@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingBag, Check } from "lucide-react";
 import { useBag } from "@/components/providers/BagProvider";
+import { supabase } from "@/lib/supabase";
 import type { Piece } from "@/lib/types";
 
 interface AddToBagButtonProps {
@@ -14,8 +16,20 @@ export default function AddToBagButton({ piece, lookName }: AddToBagButtonProps)
   const { addItem, items } = useBag();
   const isInBag = items.some((i) => i.id === piece.id);
   const [justAdded, setJustAdded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+  }, []);
 
   const handleAdd = () => {
+    if (!isAuthenticated) {
+      router.push("/onboarding");
+      return;
+    }
     if (isInBag) return;
     addItem({
       id: piece.id,

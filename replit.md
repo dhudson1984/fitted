@@ -52,7 +52,8 @@ components/
     LookCard.tsx        # Reusable look card with gradient bg, name, badges, hover overlay
     CategoryCard.tsx    # Category card with gradient, name, count, link to explore
     PieceCard.tsx       # Piece card with brand/name/price, metadata, add to bag
-    AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state
+    AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state; redirects unauthenticated users to /onboarding
+    SaveLookButton.tsx  # Client: save/unsave look to localStorage; redirects unauthenticated users to /onboarding
     ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
     PickedForYou.tsx    # Client: reads survey lifestyle from localStorage, fetches filtered looks from Supabase
     DashboardWelcome.tsx # Client: full-screen first-time welcome overlay (lifestyle tags, Build/Dashboard CTAs)
@@ -62,7 +63,7 @@ lib/
   data.ts               # Server-only data fetching: getLooks, getLookBySlug, getCategoryCounts, getRelatedLooks
   types.ts              # Client-safe types and utilities: Look, Piece, gradients, filter options
   survey-data.ts        # Survey step definitions, palettes, avoid items, brand suggestions, types
-middleware.ts           # Supabase auth middleware (protects app routes in production)
+middleware.ts           # Supabase auth middleware (protects app routes, redirects to /onboarding; /looks pages are public)
 ```
 
 ## Design System Tokens (CSS Variables)
@@ -110,7 +111,8 @@ middleware.ts           # Supabase auth middleware (protects app routes in produ
 ## Config Notes
 - `package.json` has `"type": "module"` — use `.mjs` for ESM configs, `.cjs` for CommonJS
 - `next.config.mjs` (ESM), `postcss.config.cjs` (CommonJS)
-- Auth middleware bypasses redirect in development (NODE_ENV !== "production")
+- Auth middleware redirects unauthenticated users to /onboarding for protected routes; /looks pages are publicly accessible
+- "My Lookboard" renamed to "Saved Looks" across all navigation components
 
 ## Database (Supabase)
 Tables: `looks`, `pieces`, `look_pieces` (join), `user_profiles`, `saved_looks`

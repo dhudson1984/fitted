@@ -5,7 +5,7 @@ import CategoryCard from "@/components/app/CategoryCard";
 import PickedForYou from "@/components/app/PickedForYou";
 import DashboardGreeting from "./DashboardGreeting";
 import Link from "next/link";
-import { ArrowRight, Wand2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Dashboard — Your Style Home",
@@ -28,6 +28,79 @@ export default async function DashboardPage() {
 
         <PickedForYou />
 
+        <section data-testid="section-build-cta" className="mb-12">
+          <Link
+            href="/build"
+            data-testid="link-build-cta"
+            className="block no-underline group"
+          >
+            <div
+              className="relative overflow-hidden"
+              style={{
+                background: "var(--charcoal)",
+                padding: "52px 48px",
+              }}
+            >
+              <div
+                className="absolute inset-0 opacity-[0.04]"
+                style={{
+                  backgroundImage: "radial-gradient(circle at 20% 50%, rgba(250,247,242,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(250,247,242,0.15) 0%, transparent 40%)",
+                }}
+              />
+
+              <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="flex-1">
+                  <div
+                    data-testid="text-build-cta-eyebrow"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                      color: "var(--stone)",
+                      marginBottom: 10,
+                    }}
+                  >
+                    Your Virtual Stylist
+                  </div>
+                  <h3
+                    data-testid="text-build-cta-title"
+                    style={{
+                      fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                      fontSize: "clamp(22px, 2.5vw, 34px)",
+                      fontWeight: 300,
+                      color: "var(--cream)",
+                      lineHeight: 1.2,
+                      maxWidth: 460,
+                      margin: 0,
+                    }}
+                  >
+                    Got an image in mind? Upload it and we&apos;ll build the look for you.
+                  </h3>
+                </div>
+
+                <div
+                  className="inline-flex items-center gap-2 shrink-0 transition-colors group-hover:bg-[var(--stone)]"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--charcoal)",
+                    background: "var(--cream)",
+                    border: "none",
+                    padding: "14px 32px",
+                    fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Build a Look
+                  <ArrowRight size={14} />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </section>
+
         <section data-testid="section-categories" className="mb-12">
           <h2
             data-testid="text-categories-title"
@@ -46,64 +119,6 @@ export default async function DashboardPage() {
               />
             ))}
           </div>
-        </section>
-
-        <section data-testid="section-build-cta" className="mb-12">
-          <Link
-            href="/build"
-            data-testid="link-build-cta"
-            className="block no-underline group"
-          >
-            <div
-              className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10 overflow-hidden transition-transform duration-200"
-              style={{
-                background: "var(--charcoal)",
-                borderRadius: 6,
-                padding: "36px 32px",
-              }}
-            >
-              <div
-                className="flex items-center justify-center shrink-0"
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: "50%",
-                  background: "rgba(250,247,242,0.08)",
-                }}
-              >
-                <Wand2 size={24} style={{ color: "rgba(250,247,242,0.7)" }} />
-              </div>
-
-              <div className="flex-1 text-center md:text-left">
-                <h3
-                  data-testid="text-build-cta-title"
-                  className="font-display text-2xl font-light mb-2"
-                  style={{ color: "rgba(250,247,242,0.95)" }}
-                >
-                  Need a complete look?
-                </h3>
-                <p
-                  data-testid="text-build-cta-subtitle"
-                  className="text-sm font-light"
-                  style={{ color: "rgba(250,247,242,0.5)" }}
-                >
-                  Tell us the occasion and we&apos;ll put together a head-to-toe outfit for you.
-                </p>
-              </div>
-
-              <div
-                className="flex items-center gap-2 px-5 py-3 text-[11px] font-medium tracking-[0.12em] uppercase shrink-0 transition-colors"
-                style={{
-                  border: "1.5px solid rgba(250,247,242,0.2)",
-                  color: "rgba(250,247,242,0.85)",
-                  borderRadius: 4,
-                }}
-              >
-                Build a Look
-                <ArrowRight size={13} />
-              </div>
-            </div>
-          </Link>
         </section>
       </div>
     </div>
