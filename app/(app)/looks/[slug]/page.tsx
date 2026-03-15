@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getLookBySlug, getRelatedLooks, getGradient } from "@/lib/data";
-import PieceCard from "@/components/app/PieceCard";
 import LookCard from "@/components/app/LookCard";
-import SaveLookButton from "@/components/app/SaveLookButton";
+import LookDetailClient from "@/components/app/LookDetailClient";
 
 export async function generateMetadata({
   params,
@@ -15,7 +12,7 @@ export async function generateMetadata({
   const look = await getLookBySlug(params.slug);
   if (!look) return { title: "Look Not Found" };
 
-  const brands = [...new Set(look.pieces.map((p) => p.brand))].slice(0, 3).join(", ");
+  const brands = Array.from(new Set(look.pieces.map((p) => p.brand))).slice(0, 3).join(", ");
   const description = `Shop this ${look.category.toLowerCase()} outfit featuring ${brands}. ${look.pieces.length} curated pieces styled for ${look.occasion.toLowerCase()}.`;
 
   return {
@@ -38,8 +35,8 @@ export async function generateMetadata({
 
 function generateStylingNotes(look: { name: string; category: string; vibe: string; occasion: string; season: string; pieces: { name: string; slot_type: string; brand: string; color: string; material: string }[] }): string {
   const pieceNames = look.pieces.map((p) => p.name).slice(0, 3);
-  const materials = [...new Set(look.pieces.map((p) => p.material).filter(Boolean))];
-  const colors = [...new Set(look.pieces.map((p) => p.color).filter(Boolean))];
+  const materials = Array.from(new Set(look.pieces.map((p) => p.material).filter(Boolean)));
+  const colors = Array.from(new Set(look.pieces.map((p) => p.color).filter(Boolean)));
 
   let note = `This ${look.vibe.toLowerCase()} look is curated for ${look.occasion.toLowerCase()} occasions`;
   if (look.season !== "Year-Round") {
@@ -90,47 +87,6 @@ export default async function LookDetailPage({
       style={{ background: "var(--warm-white)" }}
       data-testid="look-detail-page"
     >
-      <div
-        style={{
-          borderBottom: "1px solid var(--sand)",
-          background: "var(--warm-white)",
-          position: "sticky",
-          top: "var(--nav-h)",
-          zIndex: 50,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "14px 24px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <Link
-            href="/explore"
-            data-testid="link-back-to-explore"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              color: "var(--muted)",
-              textDecoration: "none",
-              fontSize: 12,
-              fontWeight: 400,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              transition: "color 0.2s",
-            }}
-          >
-            <ArrowLeft size={16} />
-            Back to Explore
-          </Link>
-        </div>
-      </div>
-
       <div
         className="relative overflow-hidden"
         style={{
@@ -210,55 +166,11 @@ export default async function LookDetailPage({
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "48px 24px",
-        }}
-      >
-        <div style={{ maxWidth: 280, marginBottom: 32 }}>
-          <SaveLookButton lookSlug={look.slug} lookName={look.name} />
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <h2
-            data-testid="text-pieces-heading"
-            style={{
-              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-              fontSize: 24,
-              fontWeight: 300,
-              color: "var(--charcoal)",
-              marginBottom: 4,
-            }}
-          >
-            The Pieces
-          </h2>
-          <p
-            style={{
-              fontSize: 13,
-              fontWeight: 300,
-              color: "var(--muted)",
-              marginBottom: 24,
-            }}
-          >
-            {look.pieces.length} item{look.pieces.length !== 1 ? "s" : ""} in this look
-          </p>
-        </div>
-
-        <div
-          data-testid="pieces-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {look.pieces.map((piece) => (
-            <PieceCard key={piece.id} piece={piece} lookName={look.name} lookSlug={look.slug} />
-          ))}
-        </div>
-      </div>
+      <LookDetailClient
+        lookName={look.name}
+        lookSlug={look.slug}
+        pieces={look.pieces}
+      />
 
       <div
         style={{

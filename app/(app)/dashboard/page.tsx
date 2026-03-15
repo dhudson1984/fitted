@@ -3,6 +3,7 @@ import { getCategoryCounts } from "@/lib/data";
 import DashboardWelcome from "@/components/app/DashboardWelcome";
 import CategoryCard from "@/components/app/CategoryCard";
 import PickedForYou from "@/components/app/PickedForYou";
+import SavedLooksSection from "@/components/app/SavedLooksSection";
 import DashboardGreeting from "./DashboardGreeting";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -100,6 +101,8 @@ export default async function DashboardPage() {
             </div>
           </Link>
         </section>
+
+        <SavedLooksSection />
 
         <section data-testid="section-categories" className="mb-12">
           <h2

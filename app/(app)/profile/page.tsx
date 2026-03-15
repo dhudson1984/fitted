@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, RefreshCw, Wand2 } from "lucide-react";
+import { User, Settings, RefreshCw, Wand2, Pencil, Check, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Look } from "@/lib/types";
 import LookCard from "@/components/app/LookCard";
@@ -39,12 +39,19 @@ interface SavedBuild {
   createdAt: string;
 }
 
+function extractValue(val: string | string[] | undefined): string {
+  if (!val) return "";
+  return Array.isArray(val) ? val[0] || "" : val;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [survey, setSurvey] = useState<SurveyData | null>(null);
   const [savedLooks, setSavedLooks] = useState<LookWithPieceCount[]>([]);
   const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<Record<string, string>>({});
 
   useEffect(() => {
     try {
@@ -58,21 +65,25 @@ export default function ProfilePage() {
     } catch {}
 
     async function fetchLooks() {
-      const { data: looks } = await supabase
-        .from("looks")
-        .select("*")
-        .limit(6);
+      const savedSlugs = JSON.parse(localStorage.getItem("fitted_saved_looks") || "[]");
+      if (savedSlugs.length > 0) {
+        const { data: looks } = await supabase
+          .from("looks")
+          .select("*")
+          .in("slug", savedSlugs)
+          .limit(6);
 
-      if (looks) {
-        const looksWithCounts: LookWithPieceCount[] = [];
-        for (const look of looks) {
-          const { count } = await supabase
-            .from("look_pieces")
-            .select("*", { count: "exact", head: true })
-            .eq("look_id", look.id);
-          looksWithCounts.push({ ...look, pieceCount: count || 0 });
+        if (looks) {
+          const looksWithCounts: LookWithPieceCount[] = [];
+          for (const look of looks) {
+            const { count } = await supabase
+              .from("look_pieces")
+              .select("*", { count: "exact", head: true })
+              .eq("look_id", look.id);
+            looksWithCounts.push({ ...look, pieceCount: count || 0 });
+          }
+          setSavedLooks(looksWithCounts);
         }
-        setSavedLooks(looksWithCounts);
       }
       setLoading(false);
     }
@@ -100,10 +111,83 @@ export default function ProfilePage() {
     ? new Date(completedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "Recently";
 
-  const handleResetSurvey = () => {
+  const handleRetakeSurvey = () => {
     localStorage.removeItem("fitted_survey");
     localStorage.removeItem("fitted_has_seen_welcome");
+    document.cookie = "fitted_survey_completed=; path=/; max-age=0";
     router.push("/onboarding");
+  };
+
+  const startEdit = (section: string) => {
+    if (section === "style") {
+      setEditDraft({
+        overallStyle: overallStyle || "",
+        workStyle: workStyle || "",
+        weekendStyle: weekendStyle || "",
+        printsPref: printsPref || "",
+      });
+    } else if (section === "sizing") {
+      setEditDraft({
+        bodyType: sizing.bodyType || "",
+        height: sizing.height || "",
+        weight: sizing.weight || "",
+        shirtSize: sizing.shirtSize || "",
+        shirtFit: sizing.shirtFit || "",
+        pantsWaist: sizing.pantsWaist || "",
+        pantsInseam: sizing.pantsInseam || "",
+        pantsFit: sizing.pantsFit || "",
+        shoeSize: sizing.shoeSize || "",
+      });
+    } else if (section === "budget") {
+      setEditDraft({
+        ageRange: basics.ageRange || "",
+        budgetMin: basics.budgetMin || "",
+        budgetMax: basics.budgetMax || "",
+      });
+    }
+    setEditingSection(section);
+  };
+
+  const cancelEdit = () => {
+    setEditingSection(null);
+    setEditDraft({});
+  };
+
+  const saveEdit = (section: string) => {
+    if (!survey) return;
+    const updated = { ...survey };
+
+    if (section === "style") {
+      updated["lifestyle-4"] = editDraft.overallStyle || undefined;
+      updated["lifestyle-2"] = editDraft.workStyle || undefined;
+      updated["lifestyle-3"] = editDraft.weekendStyle || undefined;
+      updated["colors-2"] = editDraft.printsPref || undefined;
+    } else if (section === "sizing") {
+      updated["sizing-1"] = {
+        ...(updated["sizing-1"] || {}),
+        bodyType: editDraft.bodyType,
+        height: editDraft.height,
+        weight: editDraft.weight,
+        shirtSize: editDraft.shirtSize,
+        shirtFit: editDraft.shirtFit,
+        pantsWaist: editDraft.pantsWaist,
+        pantsInseam: editDraft.pantsInseam,
+        pantsFit: editDraft.pantsFit,
+        shoeSize: editDraft.shoeSize,
+      };
+    } else if (section === "budget") {
+      updated["basics-1"] = {
+        ...(updated["basics-1"] || {}),
+        ageRange: editDraft.ageRange,
+        budgetMin: editDraft.budgetMin,
+        budgetMax: editDraft.budgetMax,
+      };
+    }
+
+    localStorage.setItem("fitted_survey", JSON.stringify(updated));
+    setSurvey(updated);
+    setEditingSection(null);
+    setEditDraft({});
   };
 
   return (
@@ -213,121 +297,92 @@ export default function ProfilePage() {
         title="Style Preferences"
         delay={0.05}
         testId="section-style"
+        isEditing={editingSection === "style"}
+        onEdit={() => startEdit("style")}
+        onSave={() => saveEdit("style")}
+        onCancel={cancelEdit}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 1,
-            background: "var(--sand)",
-            border: "1px solid var(--sand)",
-            marginBottom: 20,
-          }}
-        >
-          <PrefCell label="Lifestyle" testId="pref-lifestyle">
-            {lifestyle.length > 0 ? (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
-                {lifestyle.map((l) => (
-                  <PrefTag key={l}>{l}</PrefTag>
-                ))}
-              </div>
-            ) : (
-              <PrefValue>Not set</PrefValue>
-            )}
-          </PrefCell>
-          <PrefCell label="Overall Style" testId="pref-overall">
-            <PrefValue>{overallStyle || "Not set"}</PrefValue>
-          </PrefCell>
-          <PrefCell label="Work Style" testId="pref-work">
-            <PrefValue>{workStyle || "Not set"}</PrefValue>
-          </PrefCell>
-          <PrefCell label="Weekend Style" testId="pref-weekend">
-            <PrefValue>{weekendStyle || "Not set"}</PrefValue>
-          </PrefCell>
-          <PrefCell label="Color Palettes" testId="pref-colors">
-            {colorPalettes.length > 0 ? (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
-                {colorPalettes.map((c) => (
-                  <PrefTag key={c}>{c}</PrefTag>
-                ))}
-              </div>
-            ) : (
-              <PrefValue>Not set</PrefValue>
-            )}
-          </PrefCell>
-          <PrefCell label="Prints & Patterns" testId="pref-prints">
-            <PrefValue>{printsPref || "Not set"}</PrefValue>
-          </PrefCell>
-          {avoidItems.length > 0 && (
-            <PrefCell label="Pieces to Avoid" testId="pref-avoid" span={2}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
-                {avoidItems.map((a) => (
-                  <span
-                    key={a}
-                    style={{
-                      fontSize: 11,
-                      padding: "3px 11px",
-                      background: "#fdf0e8",
-                      border: "1px solid #e8c4a0",
-                      color: "#8B4A2A",
-                    }}
-                  >
-                    {a}
-                  </span>
-                ))}
-              </div>
+        {editingSection === "style" ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              marginBottom: 20,
+            }}
+          >
+            <EditField label="Overall Style" value={editDraft.overallStyle} onChange={(v) => setEditDraft((d) => ({ ...d, overallStyle: v }))} testId="edit-overall" />
+            <EditField label="Work Style" value={editDraft.workStyle} onChange={(v) => setEditDraft((d) => ({ ...d, workStyle: v }))} testId="edit-work" />
+            <EditField label="Weekend Style" value={editDraft.weekendStyle} onChange={(v) => setEditDraft((d) => ({ ...d, weekendStyle: v }))} testId="edit-weekend" />
+            <EditField label="Prints & Patterns" value={editDraft.printsPref} onChange={(v) => setEditDraft((d) => ({ ...d, printsPref: v }))} testId="edit-prints" />
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 1,
+              background: "var(--sand)",
+              border: "1px solid var(--sand)",
+              marginBottom: 20,
+            }}
+          >
+            <PrefCell label="Lifestyle" testId="pref-lifestyle">
+              {lifestyle.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                  {lifestyle.map((l) => (
+                    <PrefTag key={l}>{l}</PrefTag>
+                  ))}
+                </div>
+              ) : (
+                <PrefValue>Not set</PrefValue>
+              )}
             </PrefCell>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <button
-            data-testid="button-edit-preferences"
-            style={{
-              padding: "12px 28px",
-              background: "var(--charcoal)",
-              color: "var(--cream)",
-              border: "none",
-              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bark)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--charcoal)"; }}
-            onClick={handleResetSurvey}
-          >
-            Edit Preferences
-          </button>
-          <button
-            data-testid="button-new-survey"
-            style={{
-              padding: "12px 24px",
-              background: "var(--warm-white)",
-              color: "var(--charcoal)",
-              border: "1.5px solid var(--sand)",
-              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
-              fontSize: 11,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--stone)";
-              e.currentTarget.style.background = "var(--cream)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--sand)";
-              e.currentTarget.style.background = "var(--warm-white)";
-            }}
-            onClick={handleResetSurvey}
-          >
-            Start New Survey
-          </button>
-        </div>
+            <PrefCell label="Overall Style" testId="pref-overall">
+              <PrefValue>{overallStyle || "Not set"}</PrefValue>
+            </PrefCell>
+            <PrefCell label="Work Style" testId="pref-work">
+              <PrefValue>{workStyle || "Not set"}</PrefValue>
+            </PrefCell>
+            <PrefCell label="Weekend Style" testId="pref-weekend">
+              <PrefValue>{weekendStyle || "Not set"}</PrefValue>
+            </PrefCell>
+            <PrefCell label="Color Palettes" testId="pref-colors">
+              {colorPalettes.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                  {colorPalettes.map((c) => (
+                    <PrefTag key={c}>{c}</PrefTag>
+                  ))}
+                </div>
+              ) : (
+                <PrefValue>Not set</PrefValue>
+              )}
+            </PrefCell>
+            <PrefCell label="Prints & Patterns" testId="pref-prints">
+              <PrefValue>{printsPref || "Not set"}</PrefValue>
+            </PrefCell>
+            {avoidItems.length > 0 && (
+              <PrefCell label="Pieces to Avoid" testId="pref-avoid" span={2}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                  {avoidItems.map((a) => (
+                    <span
+                      key={a}
+                      style={{
+                        fontSize: 11,
+                        padding: "3px 11px",
+                        background: "#fdf0e8",
+                        border: "1px solid #e8c4a0",
+                        color: "#8B4A2A",
+                      }}
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </PrefCell>
+            )}
+          </div>
+        )}
       </ProfileSection>
 
       <Divider />
@@ -336,28 +391,53 @@ export default function ProfilePage() {
         title="Sizing"
         delay={0.12}
         testId="section-sizing"
+        isEditing={editingSection === "sizing"}
+        onEdit={() => startEdit("sizing")}
+        onSave={() => saveEdit("sizing")}
+        onCancel={cancelEdit}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 1,
-            background: "var(--sand)",
-            border: "1px solid var(--sand)",
-          }}
-        >
-          <SizingCell label="Body Type" value={sizing.bodyType || "Not set"} testId="sizing-body" />
-          <SizingCell label="Height" value={sizing.height || "Not set"} testId="sizing-height" />
-          <SizingCell label="Weight" value={sizing.weight ? `${sizing.weight} lbs` : "Not set"} testId="sizing-weight" />
-          <SizingCell label="Shirt Size" value={sizing.shirtSize || "Not set"} sub={sizing.shirtFit} testId="sizing-shirt" />
-          <SizingCell
-            label="Pants"
-            value={sizing.pantsWaist && sizing.pantsInseam ? `${sizing.pantsWaist} × ${sizing.pantsInseam}` : "Not set"}
-            sub={sizing.pantsFit}
-            testId="sizing-pants"
-          />
-          <SizingCell label="Shoe Size" value={sizing.shoeSize ? `${sizing.shoeSize} US` : "Not set"} testId="sizing-shoe" />
-        </div>
+        {editingSection === "sizing" ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 16,
+              marginBottom: 20,
+            }}
+          >
+            <EditField label="Body Type" value={editDraft.bodyType} onChange={(v) => setEditDraft((d) => ({ ...d, bodyType: v }))} testId="edit-body" />
+            <EditField label="Height" value={editDraft.height} onChange={(v) => setEditDraft((d) => ({ ...d, height: v }))} testId="edit-height" />
+            <EditField label="Weight (lbs)" value={editDraft.weight} onChange={(v) => setEditDraft((d) => ({ ...d, weight: v }))} testId="edit-weight" />
+            <EditField label="Shirt Size" value={editDraft.shirtSize} onChange={(v) => setEditDraft((d) => ({ ...d, shirtSize: v }))} testId="edit-shirt-size" />
+            <EditField label="Shirt Fit" value={editDraft.shirtFit} onChange={(v) => setEditDraft((d) => ({ ...d, shirtFit: v }))} testId="edit-shirt-fit" />
+            <EditField label="Pants Waist" value={editDraft.pantsWaist} onChange={(v) => setEditDraft((d) => ({ ...d, pantsWaist: v }))} testId="edit-pants-waist" />
+            <EditField label="Pants Inseam" value={editDraft.pantsInseam} onChange={(v) => setEditDraft((d) => ({ ...d, pantsInseam: v }))} testId="edit-pants-inseam" />
+            <EditField label="Pants Fit" value={editDraft.pantsFit} onChange={(v) => setEditDraft((d) => ({ ...d, pantsFit: v }))} testId="edit-pants-fit" />
+            <EditField label="Shoe Size" value={editDraft.shoeSize} onChange={(v) => setEditDraft((d) => ({ ...d, shoeSize: v }))} testId="edit-shoe" />
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 1,
+              background: "var(--sand)",
+              border: "1px solid var(--sand)",
+            }}
+          >
+            <SizingCell label="Body Type" value={sizing.bodyType || "Not set"} testId="sizing-body" />
+            <SizingCell label="Height" value={sizing.height || "Not set"} testId="sizing-height" />
+            <SizingCell label="Weight" value={sizing.weight ? `${sizing.weight} lbs` : "Not set"} testId="sizing-weight" />
+            <SizingCell label="Shirt Size" value={sizing.shirtSize || "Not set"} sub={sizing.shirtFit} testId="sizing-shirt" />
+            <SizingCell
+              label="Pants"
+              value={sizing.pantsWaist && sizing.pantsInseam ? `${sizing.pantsWaist} × ${sizing.pantsInseam}` : "Not set"}
+              sub={sizing.pantsFit}
+              testId="sizing-pants"
+            />
+            <SizingCell label="Shoe Size" value={sizing.shoeSize ? `${sizing.shoeSize} US` : "Not set"} testId="sizing-shoe" />
+          </div>
+        )}
       </ProfileSection>
 
       <Divider />
@@ -366,46 +446,67 @@ export default function ProfilePage() {
         title="Budget"
         delay={0.19}
         testId="section-budget"
+        isEditing={editingSection === "budget"}
+        onEdit={() => startEdit("budget")}
+        onSave={() => saveEdit("budget")}
+        onCancel={cancelEdit}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 1,
-            background: "var(--sand)",
-            border: "1px solid var(--sand)",
-          }}
-        >
-          <PrefCell label="Age Range" testId="pref-age">
-            <PrefValue>{basics.ageRange || "Not set"}</PrefValue>
-          </PrefCell>
-          <PrefCell label="Budget Per Item" testId="pref-budget">
-            <PrefValue>
-              {basics.budgetMin && basics.budgetMax
-                ? `$${basics.budgetMin} – $${basics.budgetMax}`
-                : "Not set"}
-            </PrefValue>
-          </PrefCell>
-        </div>
-        {brands.length > 0 && (
-          <div style={{ marginTop: 20 }}>
+        {editingSection === "budget" ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: 16,
+              marginBottom: 20,
+            }}
+          >
+            <EditField label="Age Range" value={editDraft.ageRange} onChange={(v) => setEditDraft((d) => ({ ...d, ageRange: v }))} testId="edit-age" />
+            <EditField label="Budget Min ($)" value={editDraft.budgetMin} onChange={(v) => setEditDraft((d) => ({ ...d, budgetMin: v }))} testId="edit-budget-min" />
+            <EditField label="Budget Max ($)" value={editDraft.budgetMax} onChange={(v) => setEditDraft((d) => ({ ...d, budgetMax: v }))} testId="edit-budget-max" />
+          </div>
+        ) : (
+          <>
             <div
               style={{
-                fontSize: 10,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "var(--muted)",
-                marginBottom: 8,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 1,
+                background: "var(--sand)",
+                border: "1px solid var(--sand)",
               }}
             >
-              Favorite Brands
+              <PrefCell label="Age Range" testId="pref-age">
+                <PrefValue>{basics.ageRange || "Not set"}</PrefValue>
+              </PrefCell>
+              <PrefCell label="Budget Per Item" testId="pref-budget">
+                <PrefValue>
+                  {basics.budgetMin && basics.budgetMax
+                    ? `$${basics.budgetMin} – $${basics.budgetMax}`
+                    : "Not set"}
+                </PrefValue>
+              </PrefCell>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {brands.map((b) => (
-                <PrefTag key={b}>{b}</PrefTag>
-              ))}
-            </div>
-          </div>
+            {brands.length > 0 && (
+              <div style={{ marginTop: 20 }}>
+                <div
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                    marginBottom: 8,
+                  }}
+                >
+                  Favorite Brands
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {brands.map((b) => (
+                    <PrefTag key={b}>{b}</PrefTag>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </ProfileSection>
 
@@ -417,7 +518,7 @@ export default function ProfilePage() {
         testId="section-looks"
         action={
           <Link
-            href="/explore"
+            href="/lookboard"
             data-testid="link-see-all-looks"
             style={{
               fontSize: 11,
@@ -493,6 +594,61 @@ export default function ProfilePage() {
         <div
           style={{
             padding: 24,
+            border: "1px solid var(--sand)",
+            background: "var(--cream)",
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+              fontSize: 18,
+              fontWeight: 400,
+              marginBottom: 8,
+              color: "var(--charcoal)",
+            }}
+          >
+            Retake Full Survey
+          </div>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 300,
+              color: "var(--muted)",
+              lineHeight: 1.6,
+              marginBottom: 16,
+              maxWidth: 500,
+            }}
+          >
+            Start fresh with a completely new style profile. This clears all your current
+            preferences and takes you through the full survey again.
+          </div>
+          <button
+            data-testid="button-retake-survey"
+            onClick={handleRetakeSurvey}
+            style={{
+              padding: "12px 28px",
+              background: "var(--charcoal)",
+              color: "var(--cream)",
+              border: "none",
+              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bark)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--charcoal)"; }}
+          >
+            Retake Survey
+          </button>
+        </div>
+
+        <div
+          style={{
+            padding: 24,
             border: "1px solid #e8c4c4",
             background: "#fdf8f8",
           }}
@@ -518,12 +674,20 @@ export default function ProfilePage() {
               maxWidth: 500,
             }}
           >
-            This will clear all your style preferences and sizing information. You&apos;ll be taken
-            through the onboarding survey again from scratch.
+            This will clear all your style preferences, sizing information, and saved looks.
+            You&apos;ll need to complete the survey again from scratch.
           </div>
           <button
             data-testid="button-reset-profile"
-            onClick={handleResetSurvey}
+            onClick={() => {
+              localStorage.removeItem("fitted_survey");
+              localStorage.removeItem("fitted_has_seen_welcome");
+              localStorage.removeItem("fitted_saved_looks");
+              localStorage.removeItem("fitted_saved_items");
+              localStorage.removeItem("fitted_builds");
+              document.cookie = "fitted_survey_completed=; path=/; max-age=0";
+              router.push("/onboarding");
+            }}
             style={{
               padding: "10px 20px",
               background: "transparent",
@@ -546,7 +710,7 @@ export default function ProfilePage() {
               e.currentTarget.style.borderColor = "#e8c4c4";
             }}
           >
-            Start New Survey
+            Reset Everything
           </button>
         </div>
       </ProfileSection>
@@ -559,12 +723,20 @@ function ProfileSection({
   delay,
   testId,
   action,
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
   children,
 }: {
   title: string;
   delay: number;
   testId: string;
   action?: React.ReactNode;
+  isEditing?: boolean;
+  onEdit?: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -580,7 +752,7 @@ function ProfileSection({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "baseline",
+          alignItems: "center",
           marginBottom: 24,
         }}
       >
@@ -593,9 +765,149 @@ function ProfileSection({
         >
           {title}
         </div>
-        {action}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {action}
+          {isEditing ? (
+            <>
+              <button
+                data-testid={`button-save-${testId}`}
+                onClick={onSave}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "7px 16px",
+                  background: "var(--charcoal)",
+                  color: "var(--cream)",
+                  border: "none",
+                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
+              >
+                <Check size={12} />
+                Save
+              </button>
+              <button
+                data-testid={`button-cancel-${testId}`}
+                onClick={onCancel}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "7px 14px",
+                  background: "transparent",
+                  color: "var(--muted)",
+                  border: "1.5px solid var(--sand)",
+                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                  fontSize: 10,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--stone)";
+                  e.currentTarget.style.color = "var(--charcoal)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--sand)";
+                  e.currentTarget.style.color = "var(--muted)";
+                }}
+              >
+                <X size={12} />
+                Cancel
+              </button>
+            </>
+          ) : onEdit ? (
+            <button
+              data-testid={`button-edit-${testId}`}
+              onClick={onEdit}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "7px 14px",
+                background: "transparent",
+                color: "var(--muted)",
+                border: "1.5px solid var(--sand)",
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                fontSize: 10,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--stone)";
+                e.currentTarget.style.color = "var(--charcoal)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--sand)";
+                e.currentTarget.style.color = "var(--muted)";
+              }}
+            >
+              <Pencil size={11} />
+              Edit
+            </button>
+          ) : null}
+        </div>
       </div>
       {children}
+    </div>
+  );
+}
+
+function EditField({
+  label,
+  value,
+  onChange,
+  testId,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  testId: string;
+}) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: 10,
+          letterSpacing: "0.15em",
+          textTransform: "uppercase",
+          color: "var(--muted)",
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </label>
+      <input
+        data-testid={testId}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          padding: "10px 14px",
+          border: "1.5px solid var(--sand)",
+          background: "var(--warm-white)",
+          fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+          fontSize: 13,
+          color: "var(--charcoal)",
+          outline: "none",
+          transition: "border-color 0.2s",
+        }}
+        onFocus={(e) => (e.currentTarget.style.borderColor = "var(--stone)")}
+        onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+      />
     </div>
   );
 }
@@ -709,7 +1021,7 @@ function BuildCard({ build }: { build: SavedBuild }) {
     month: "short",
     day: "numeric",
   });
-  const brandList = [...new Set(build.pieces.map((p) => p.brand))].slice(0, 2).join(", ");
+  const brandList = Array.from(new Set(build.pieces.map((p) => p.brand))).slice(0, 2).join(", ");
 
   return (
     <Link
@@ -736,82 +1048,43 @@ function BuildCard({ build }: { build: SavedBuild }) {
           justifyContent: "space-between",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
+        <div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
               fontSize: 9,
-              letterSpacing: "0.14em",
+              letterSpacing: "0.15em",
               textTransform: "uppercase",
-              fontWeight: 500,
-              color: "rgba(250,247,242,0.85)",
-              background: "rgba(250,247,242,0.18)",
-              padding: "4px 10px",
-              borderRadius: 3,
+              color: "rgba(250,247,242,0.5)",
+              marginBottom: 6,
             }}
           >
-            <Wand2 size={10} />
-            Your Build
+            Custom Build &middot; {dateStr}
           </div>
-        </div>
-
-        <div>
-          {build.analysis?.vibe && (
-            <div
-              style={{
-                fontSize: 9,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "rgba(250,247,242,0.5)",
-                marginBottom: 6,
-              }}
-            >
-              {build.analysis.vibe}
-            </div>
-          )}
           <div
             style={{
               fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-              fontSize: 16,
-              fontWeight: 400,
+              fontSize: 20,
+              fontWeight: 300,
               color: "rgba(250,247,242,0.95)",
-              lineHeight: 1.3,
-              marginBottom: 6,
+              lineHeight: 1.2,
             }}
           >
             {build.name}
           </div>
-          {brandList && (
-            <div
-              style={{
-                fontSize: 10,
-                color: "rgba(250,247,242,0.45)",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {brandList}
-            </div>
-          )}
         </div>
-      </div>
-      <div style={{ fontSize: 11, fontWeight: 300, color: "var(--muted)" }}>
-        {build.pieces.length} pieces · {dateStr}
+        <div>
+          <div
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "rgba(250,247,242,0.5)",
+            }}
+          >
+            {build.pieces.length} pieces &middot; {brandList}
+          </div>
+        </div>
       </div>
     </Link>
   );
-}
-
-function extractValue(val: string | string[] | Record<string, string> | undefined): string {
-  if (!val) return "";
-  if (typeof val === "string") return val;
-  if (Array.isArray(val)) return val[0] || "";
-  return "";
 }

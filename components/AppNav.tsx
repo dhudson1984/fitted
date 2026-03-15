@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingBag, ArrowLeft, User, Heart, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface AppNavProps {
   bagCount?: number;
@@ -35,6 +36,20 @@ export default function AppNav({
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const [logoHref, setLogoHref] = useState("/dashboard");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        try {
+          const survey = localStorage.getItem("fitted_survey");
+          if (!survey) setLogoHref("/");
+        } catch {
+          setLogoHref("/");
+        }
+      }
+    });
+  }, []);
 
   const breadcrumb = Object.entries(BREADCRUMB_MAP).find(([prefix]) =>
     pathname.startsWith(prefix)
@@ -76,7 +91,7 @@ export default function AppNav({
       </button>
 
       <Link
-        href="/dashboard"
+        href={logoHref}
         data-testid="link-logo"
         className="font-display text-[20px] font-normal tracking-[0.15em] uppercase text-charcoal no-underline cursor-pointer shrink-0"
       >

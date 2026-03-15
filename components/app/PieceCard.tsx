@@ -1,14 +1,16 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import type { Piece } from "@/lib/types";
 import { trackAffiliateClick } from "@/lib/analytics";
 import AddToBagButton from "./AddToBagButton";
+import SaveItemButton from "./SaveItemButton";
 
 interface PieceCardProps {
   piece: Piece & { sort_order: number };
   lookName: string;
   lookSlug?: string;
+  onSwap?: (piece: Piece & { sort_order: number }) => void;
 }
 
 const SLOT_LABELS: Record<string, string> = {
@@ -24,7 +26,7 @@ const SLOT_LABELS: Record<string, string> = {
   layer: "Layer",
 };
 
-export default function PieceCard({ piece, lookName, lookSlug }: PieceCardProps) {
+export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCardProps) {
   const slotLabel = SLOT_LABELS[piece.slot_type] || piece.slot_type;
 
   return (
@@ -70,17 +72,20 @@ export default function PieceCard({ piece, lookName, lookSlug }: PieceCardProps)
             marginBottom: 4,
           }}
         >
-          <div
-            data-testid={`text-piece-brand-${piece.id}`}
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "var(--bark)",
-              fontWeight: 500,
-            }}
-          >
-            {piece.brand}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div
+              data-testid={`text-piece-brand-${piece.id}`}
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--bark)",
+                fontWeight: 500,
+              }}
+            >
+              {piece.brand}
+            </div>
+            <SaveItemButton piece={piece} />
           </div>
           <div
             data-testid={`text-piece-slot-${piece.id}`}
@@ -179,6 +184,42 @@ export default function PieceCard({ piece, lookName, lookSlug }: PieceCardProps)
 
       <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
         <AddToBagButton piece={piece} lookName={lookName} />
+
+        {onSwap && (
+          <button
+            data-testid={`button-swap-${piece.id}`}
+            onClick={() => onSwap(piece)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              width: "100%",
+              padding: "9px 16px",
+              border: "1px solid var(--sand)",
+              background: "transparent",
+              color: "var(--charcoal)",
+              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--stone)";
+              e.currentTarget.style.background = "var(--cream)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--sand)";
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <RefreshCw size={11} />
+            Swap
+          </button>
+        )}
 
         {piece.retailer_url && (
           <a

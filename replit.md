@@ -52,8 +52,14 @@ components/
     LookCard.tsx        # Reusable look card with gradient bg, name, badges, hover overlay
     CategoryCard.tsx    # Category card with gradient, name, count, link to explore
     PieceCard.tsx       # Piece card with brand/name/price, metadata, add to bag
-    AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state; redirects unauthenticated users to /onboarding
-    SaveLookButton.tsx  # Client: save/unsave look to localStorage; redirects unauthenticated users to /onboarding
+    AddToBagButton.tsx  # Client: add piece to bag via BagProvider, shows "In Bag" state; shows AuthPromptModal for unauthenticated users
+    SaveLookButton.tsx  # Client: save/unsave look to localStorage; shows AuthPromptModal for unauthenticated users
+    SaveItemButton.tsx  # Client: save/unsave individual pieces to localStorage (fitted_saved_items); bookmark icon on PieceCard
+    AuthPromptModal.tsx # Modal: "Join Fitted to save your style" with Begin Survey + Maybe Later buttons (shown instead of redirect)
+    LookBackNav.tsx     # Client: auth-aware back navigation (→ /explore for auth users, → / for unauth)
+    LookDetailClient.tsx # Client wrapper: pieces grid with SwapDrawer integration, SaveLookButton, LookBackNav
+    SwapDrawer.tsx      # Client: slide-in drawer showing alternative pieces by slot_type from Supabase, with price diff badges and select/bag buttons
+    SavedLooksSection.tsx # Client: dashboard section showing saved outfits (from fitted_saved_looks) and saved items (from fitted_saved_items)
     ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
     PickedForYou.tsx    # Client: reads survey lifestyle from localStorage, fetches filtered looks from Supabase
     DashboardWelcome.tsx # Client: full-screen first-time welcome overlay (lifestyle tags, Build/Dashboard CTAs)
@@ -111,8 +117,14 @@ middleware.ts           # Supabase auth middleware (protects app routes, redirec
 ## Config Notes
 - `package.json` has `"type": "module"` — use `.mjs` for ESM configs, `.cjs` for CommonJS
 - `next.config.mjs` (ESM), `postcss.config.cjs` (CommonJS)
-- Auth middleware redirects unauthenticated users to /onboarding for protected routes; /looks pages are publicly accessible
+- Auth model: No Supabase login flow — users authenticate via survey completion; `fitted_survey` in localStorage + `fitted_survey_completed` cookie grant app access
+- Auth middleware checks both Supabase session AND `fitted_survey_completed` cookie; /looks pages are publicly accessible
+- AuthPromptModal shows "Join Fitted to save your style" with "Begin Survey" + "Maybe Later" options (no redirect)
 - "My Lookboard" renamed to "Saved Looks" across all navigation components
+- Saved items use localStorage key `fitted_saved_items`; saved looks use `fitted_saved_looks`
+- AppNav logo links to "/" for unauthenticated users, "/dashboard" for authenticated
+- Profile page has inline editing per section (Style, Sizing, Budget) + "Retake Full Survey" option
+- SwapDrawer queries Supabase pieces table by slot_type to find alternatives with price comparison
 
 ## Database (Supabase)
 Tables: `looks`, `pieces`, `look_pieces` (join), `user_profiles`, `saved_looks`

@@ -39,7 +39,9 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !session) {
+  const hasSurvey = req.cookies.get("fitted_survey_completed")?.value === "true";
+
+  if (isProtected && !session && !hasSurvey) {
     const redirectUrl = new URL("/onboarding", req.url);
     return NextResponse.redirect(redirectUrl);
   }
