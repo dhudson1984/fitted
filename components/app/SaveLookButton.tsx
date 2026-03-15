@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import AuthPromptModal from "./AuthPromptModal";
 
 interface SaveLookButtonProps {
@@ -12,17 +11,16 @@ interface SaveLookButtonProps {
 
 export default function SaveLookButton({ lookSlug, lookName }: SaveLookButtonProps) {
   const [saved, setSaved] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
     try {
       const survey = localStorage.getItem("fitted_survey");
-      if (survey) setIsAuthenticated(true);
-    } catch {}
+      setIsAuthenticated(!!survey);
+    } catch {
+      setIsAuthenticated(false);
+    }
 
     try {
       const savedLooks = JSON.parse(localStorage.getItem("fitted_saved_looks") || "[]");

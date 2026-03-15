@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useBag } from "@/components/providers/BagProvider";
 import AuthPromptModal from "./AuthPromptModal";
 import type { Piece } from "@/lib/types";
+// supabase import kept for fetching alternatives only
 
 interface SwapDrawerProps {
   isOpen: boolean;
@@ -19,18 +20,17 @@ export default function SwapDrawer({ isOpen, onClose, currentPiece, lookName, on
   const [alternatives, setAlternatives] = useState<Piece[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { addItem, items } = useBag();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
     try {
       const survey = localStorage.getItem("fitted_survey");
-      if (survey) setIsAuthenticated(true);
-    } catch {}
+      setIsAuthenticated(!!survey);
+    } catch {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   const handleKeyDown = useCallback(

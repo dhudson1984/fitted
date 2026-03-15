@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Check } from "lucide-react";
 import { useBag } from "@/components/providers/BagProvider";
-import { supabase } from "@/lib/supabase";
 import AuthPromptModal from "./AuthPromptModal";
 import type { Piece } from "@/lib/types";
 
@@ -16,17 +15,16 @@ export default function AddToBagButton({ piece, lookName }: AddToBagButtonProps)
   const { addItem, items } = useBag();
   const isInBag = items.some((i) => i.id === piece.id);
   const [justAdded, setJustAdded] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
     try {
       const survey = localStorage.getItem("fitted_survey");
-      if (survey) setIsAuthenticated(true);
-    } catch {}
+      setIsAuthenticated(!!survey);
+    } catch {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   const handleAdd = () => {

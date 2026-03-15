@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Bookmark } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import AuthPromptModal from "./AuthPromptModal";
 import type { Piece } from "@/lib/types";
 
@@ -12,17 +11,16 @@ interface SaveItemButtonProps {
 
 export default function SaveItemButton({ piece }: SaveItemButtonProps) {
   const [saved, setSaved] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
     try {
       const survey = localStorage.getItem("fitted_survey");
-      if (survey) setIsAuthenticated(true);
-    } catch {}
+      setIsAuthenticated(!!survey);
+    } catch {
+      setIsAuthenticated(false);
+    }
 
     try {
       const items = JSON.parse(localStorage.getItem("fitted_saved_items") || "[]");
