@@ -6,22 +6,20 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function LookBackNav() {
-  const [backHref, setBackHref] = useState("/explore");
-  const [backLabel, setBackLabel] = useState("Back to Explore");
+  const [backHref, setBackHref] = useState("/");
+  const [backLabel, setBackLabel] = useState("Back to Home");
 
   useEffect(() => {
+    let authenticated = false;
+    try {
+      const survey = localStorage.getItem("fitted_survey");
+      if (survey) authenticated = true;
+    } catch {}
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        try {
-          const survey = localStorage.getItem("fitted_survey");
-          if (!survey) {
-            setBackHref("/");
-            setBackLabel("Back to Home");
-          }
-        } catch {
-          setBackHref("/");
-          setBackLabel("Back to Home");
-        }
+      if (session) authenticated = true;
+      if (authenticated) {
+        setBackHref("/explore");
+        setBackLabel("Back to Explore");
       }
     });
   }, []);

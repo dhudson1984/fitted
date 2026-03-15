@@ -93,8 +93,8 @@ export default function SurveyShell() {
       localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
     document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000; SameSite=Lax";
-    router.push("/dashboard");
-  }, [selections, lifestyle, router]);
+    window.location.href = "/dashboard";
+  }, [selections, lifestyle]);
 
   if (completed) {
     return (

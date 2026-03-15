@@ -36,18 +36,17 @@ export default function AppNav({
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  const [logoHref, setLogoHref] = useState("/dashboard");
+  const [logoHref, setLogoHref] = useState("/");
 
   useEffect(() => {
+    let authenticated = false;
+    try {
+      const survey = localStorage.getItem("fitted_survey");
+      if (survey) authenticated = true;
+    } catch {}
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        try {
-          const survey = localStorage.getItem("fitted_survey");
-          if (!survey) setLogoHref("/");
-        } catch {
-          setLogoHref("/");
-        }
-      }
+      if (session) authenticated = true;
+      setLogoHref(authenticated ? "/dashboard" : "/");
     });
   }, []);
 
