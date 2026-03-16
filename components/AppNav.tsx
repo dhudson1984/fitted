@@ -35,12 +35,26 @@ export default function AppNav({
 }: AppNavProps) {
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const logoHref = "/";
 
-  const breadcrumb = Object.entries(BREADCRUMB_MAP).find(([prefix]) =>
-    pathname.startsWith(prefix)
-  )?.[1];
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("fitted_survey");
+      if (raw) {
+        const data = JSON.parse(raw);
+        const name = data?.firstName || data?.["intro-1"]?.firstName || "";
+        setIsAuthenticated(name.trim().length > 0);
+      }
+    } catch {}
+  }, []);
+
+  const breadcrumb = isAuthenticated
+    ? Object.entries(BREADCRUMB_MAP).find(([prefix]) =>
+        pathname.startsWith(prefix)
+      )?.[1]
+    : undefined;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -66,16 +80,18 @@ export default function AppNav({
         borderBottom: "1px solid rgba(196,184,154,0.25)",
       }}
     >
-      <button
-        data-testid="button-hamburger"
-        className="hidden max-md:flex flex-col justify-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer p-1.5 shrink-0"
-        onClick={onHamburgerClick}
-        aria-label="Menu"
-      >
-        <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-        <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-        <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-      </button>
+      {isAuthenticated && (
+        <button
+          data-testid="button-hamburger"
+          className="hidden max-md:flex flex-col justify-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer p-1.5 shrink-0"
+          onClick={onHamburgerClick}
+          aria-label="Menu"
+        >
+          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
+          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
+          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
+        </button>
+      )}
 
       <Link
         href={logoHref}
@@ -85,7 +101,7 @@ export default function AppNav({
         Fitted
       </Link>
 
-      {breadcrumb && (
+      {breadcrumb ? (
         <>
           <Link
             href={breadcrumb.back}
@@ -103,102 +119,138 @@ export default function AppNav({
             {breadcrumb.crumb}
           </span>
         </>
-      )}
+      ) : !isAuthenticated && pathname.startsWith("/looks") ? (
+        <Link
+          href="/"
+          data-testid="button-back"
+          className="flex items-center gap-[7px] text-[12px] max-md:text-[11px] max-md:gap-[5px] tracking-[0.08em] uppercase text-muted hover:text-charcoal transition-colors font-body no-underline"
+        >
+          <ArrowLeft className="w-3 h-3" />
+          <span>Home</span>
+        </Link>
+      ) : null}
 
       <div className="flex-1" />
 
       <div className="flex items-center gap-4 ml-auto">
-        <button
-          data-testid="button-bag"
-          className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none"
-          onClick={onBagClick}
-          aria-label="Open bag"
-        >
-          <ShoppingBag className="w-[17px] h-[17px]" />
-          {bagCount > 0 && (
-            <span
-              data-testid="text-bag-count"
-              className="absolute top-[2px] right-[2px] min-w-[16px] h-4 rounded-full bg-bark text-cream text-[9px] font-medium flex items-center justify-center px-1 font-body"
+        {isAuthenticated ? (
+          <>
+            <button
+              data-testid="button-bag"
+              className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none"
+              onClick={onBagClick}
+              aria-label="Open bag"
             >
-              {bagCount}
-            </span>
-          )}
-        </button>
+              <ShoppingBag className="w-[17px] h-[17px]" />
+              {bagCount > 0 && (
+                <span
+                  data-testid="text-bag-count"
+                  className="absolute top-[2px] right-[2px] min-w-[16px] h-4 rounded-full bg-bark text-cream text-[9px] font-medium flex items-center justify-center px-1 font-body"
+                >
+                  {bagCount}
+                </span>
+              )}
+            </button>
 
-        <div className="relative max-md:hidden" ref={profileRef}>
-          <button
-            data-testid="button-profile-avatar"
-            className="w-[34px] h-[34px] rounded-full bg-charcoal hover:bg-bark flex items-center justify-center text-[13px] font-medium text-cream cursor-pointer border-none font-body transition-colors"
-            onClick={() => setProfileOpen((prev) => !prev)}
-            aria-label="Profile menu"
-          >
-            {userInitial}
-          </button>
+            <div className="relative max-md:hidden" ref={profileRef}>
+              <button
+                data-testid="button-profile-avatar"
+                className="w-[34px] h-[34px] rounded-full bg-charcoal hover:bg-bark flex items-center justify-center text-[13px] font-medium text-cream cursor-pointer border-none font-body transition-colors"
+                onClick={() => setProfileOpen((prev) => !prev)}
+                aria-label="Profile menu"
+              >
+                {userInitial}
+              </button>
 
-          <div
-            data-testid="dropdown-profile-menu"
-            className="absolute top-[calc(100%+10px)] right-0 w-[210px] bg-warm-white border border-sand z-[500] transition-all duration-200"
-            style={{
-              boxShadow: "0 8px 32px rgba(26,26,24,0.12)",
-              opacity: profileOpen ? 1 : 0,
-              pointerEvents: profileOpen ? "all" : "none",
-              transform: profileOpen ? "translateY(0)" : "translateY(-6px)",
-            }}
-          >
-            <div className="px-4 pt-3.5 pb-2.5 border-b border-sand">
-              <div className="text-sm font-normal text-charcoal" data-testid="text-profile-name">
-                {userName}
-              </div>
-              <div className="text-[11px] font-light text-muted mt-px" data-testid="text-profile-email">
-                {userEmail}
+              <div
+                data-testid="dropdown-profile-menu"
+                className="absolute top-[calc(100%+10px)] right-0 w-[210px] bg-warm-white border border-sand z-[500] transition-all duration-200"
+                style={{
+                  boxShadow: "0 8px 32px rgba(26,26,24,0.12)",
+                  opacity: profileOpen ? 1 : 0,
+                  pointerEvents: profileOpen ? "all" : "none",
+                  transform: profileOpen ? "translateY(0)" : "translateY(-6px)",
+                }}
+              >
+                <div className="px-4 pt-3.5 pb-2.5 border-b border-sand">
+                  <div className="text-sm font-normal text-charcoal" data-testid="text-profile-name">
+                    {userName}
+                  </div>
+                  <div className="text-[11px] font-light text-muted mt-px" data-testid="text-profile-email">
+                    {userEmail}
+                  </div>
+                </div>
+
+                <Link
+                  href="/profile"
+                  data-testid="link-profile-my-profile"
+                  className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  <User className="w-3 h-3 opacity-60" />
+                  My Profile
+                </Link>
+                <button
+                  data-testid="button-profile-my-bag"
+                  className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors w-full text-left font-body bg-transparent border-none cursor-pointer tracking-[0.03em]"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    onBagClick?.();
+                  }}
+                >
+                  <ShoppingBag className="w-3 h-3 opacity-60" />
+                  My Bag
+                </button>
+                <Link
+                  href="/lookboard"
+                  data-testid="link-profile-saved-looks"
+                  className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  <Heart className="w-3 h-3 opacity-60" />
+                  Saved Looks
+                </Link>
+
+                <div className="h-px bg-sand" />
+
+                <button
+                  data-testid="button-profile-sign-out"
+                  className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-[#8B4A2A] hover:bg-[#fdf5f0] transition-colors w-full text-left font-body bg-transparent border-none cursor-pointer tracking-[0.03em]"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    onSignOut?.();
+                  }}
+                >
+                  <LogOut className="w-3 h-3 opacity-60" />
+                  Sign Out
+                </button>
               </div>
             </div>
-
-            <Link
-              href="/profile"
-              data-testid="link-profile-my-profile"
-              className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
-              onClick={() => setProfileOpen(false)}
-            >
-              <User className="w-3 h-3 opacity-60" />
-              My Profile
-            </Link>
-            <button
-              data-testid="button-profile-my-bag"
-              className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors w-full text-left font-body bg-transparent border-none cursor-pointer tracking-[0.03em]"
-              onClick={() => {
-                setProfileOpen(false);
-                onBagClick?.();
-              }}
-            >
-              <ShoppingBag className="w-3 h-3 opacity-60" />
-              My Bag
-            </button>
-            <Link
-              href="/lookboard"
-              data-testid="link-profile-saved-looks"
-              className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
-              onClick={() => setProfileOpen(false)}
-            >
-              <Heart className="w-3 h-3 opacity-60" />
-              Saved Looks
-            </Link>
-
-            <div className="h-px bg-sand" />
-
-            <button
-              data-testid="button-profile-sign-out"
-              className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-[#8B4A2A] hover:bg-[#fdf5f0] transition-colors w-full text-left font-body bg-transparent border-none cursor-pointer tracking-[0.03em]"
-              onClick={() => {
-                setProfileOpen(false);
-                onSignOut?.();
-              }}
-            >
-              <LogOut className="w-3 h-3 opacity-60" />
-              Sign Out
-            </button>
-          </div>
-        </div>
+          </>
+        ) : (
+          <Link
+            href="/onboarding"
+            data-testid="link-nav-get-started"
+            className="font-body"
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--warm-white)",
+              background: "var(--charcoal)",
+              padding: "10px 24px",
+              textDecoration: "none",
+              transition: "background 0.2s",
+              border: "none",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
+          >
+            Get Started
+          </Link>
+        )}
       </div>
     </nav>
   );
