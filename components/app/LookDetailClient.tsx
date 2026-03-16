@@ -21,12 +21,8 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("fitted_survey");
-      if (raw) {
-        const data = JSON.parse(raw);
-        const name = data?.firstName || data?.["intro-1"]?.firstName || "";
-        setIsAuthenticated(name.trim().length > 0);
-      }
+      const name = localStorage.getItem("userName");
+      setIsAuthenticated(!!name && name.trim().length > 0);
     } catch {}
   }, []);
 

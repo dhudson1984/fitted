@@ -64,6 +64,9 @@ export default function SurveyShell() {
         lifestyle: Array.from(lifestyle),
         completedAt: new Date().toISOString(),
       }));
+      if (firstName) {
+        localStorage.setItem("userName", firstName);
+      }
       localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
     document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000; SameSite=Lax";
