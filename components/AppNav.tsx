@@ -19,6 +19,7 @@ interface AppNavProps {
 const BREADCRUMB_MAP: Record<string, { back: string; backLabel: string; crumb: string }> = {
   "/explore": { back: "/dashboard", backLabel: "Dashboard", crumb: "Explore" },
   "/build": { back: "/dashboard", backLabel: "Dashboard", crumb: "Build a Look" },
+  "/builds": { back: "/dashboard", backLabel: "Dashboard", crumb: "Saved Build" },
   "/profile": { back: "/dashboard", backLabel: "Dashboard", crumb: "Profile" },
   "/looks": { back: "/dashboard", backLabel: "My Dashboard", crumb: "Look Detail" },
   "/lookboard": { back: "/dashboard", backLabel: "Dashboard", crumb: "Saved Looks" },
@@ -29,22 +30,15 @@ export default function AppNav({
   onHamburgerClick,
   onBagClick,
   onSignOut,
-  userName = "David",
-  userEmail = "david@email.com",
-  userInitial = "D",
+  userName,
+  userEmail,
+  userInitial,
 }: AppNavProps) {
   const pathname = usePathname();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const isAuthenticated = !!userName && userName.trim().length > 0;
   const logoHref = isAuthenticated ? "/dashboard" : "/";
-
-  useEffect(() => {
-    try {
-      const name = localStorage.getItem("userName");
-      setIsAuthenticated(!!name && name.trim().length > 0);
-    } catch {}
-  }, []);
 
   const breadcrumb = isAuthenticated
     ? Object.entries(BREADCRUMB_MAP).find(([prefix]) =>
