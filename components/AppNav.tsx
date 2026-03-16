@@ -198,13 +198,13 @@ export default function AppNav({
                   My Bag
                 </button>
                 <Link
-                  href="/lookboard"
+                  href="/dashboard#saved"
                   data-testid="link-profile-saved-looks"
                   className="flex items-center gap-2.5 py-[11px] px-4 text-[12px] text-charcoal hover:bg-cream transition-colors no-underline tracking-[0.03em] font-body"
                   onClick={() => setProfileOpen(false)}
                 >
                   <Heart className="w-3 h-3 opacity-60" />
-                  Saved Looks
+                  Saved
                 </Link>
 
                 <div className="h-px bg-sand" />

@@ -62,7 +62,7 @@ export default function SavedLooksSection() {
 
   if (loading) {
     return (
-      <section data-testid="section-saved-looks" style={{ marginBottom: 48 }}>
+      <section id="saved" data-testid="section-saved-looks" style={{ marginBottom: 48 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, color: "var(--muted)" }}>
           <RefreshCw size={16} style={{ animation: "spin 1s linear infinite", marginRight: 8 }} />
           Loading...
@@ -74,7 +74,7 @@ export default function SavedLooksSection() {
   if (savedSlugs.length === 0 && savedItems.length === 0) return null;
 
   return (
-    <section data-testid="section-saved-looks" style={{ marginBottom: 48 }}>
+    <section id="saved" data-testid="section-saved-looks" style={{ marginBottom: 48 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
         <h2
           data-testid="text-saved-looks-title"
@@ -85,7 +85,7 @@ export default function SavedLooksSection() {
             color: "var(--charcoal)",
           }}
         >
-          Saved Looks
+          Saved
         </h2>
         <Link
           href="/lookboard"

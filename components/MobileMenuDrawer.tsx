@@ -25,7 +25,7 @@ const menuItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Explore Looks", href: "/explore", icon: Diamond },
   { label: "Build a Look", href: "/build", icon: Triangle },
-  { label: "Saved Looks", href: "/lookboard", icon: Heart },
+  { label: "Saved", href: "/dashboard#saved", icon: Heart },
   { label: "Profile", href: "/profile", icon: User },
 ];
 
