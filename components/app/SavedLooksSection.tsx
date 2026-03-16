@@ -157,7 +157,7 @@ export default function SavedLooksSection() {
                 style={{ position: "relative" }}
               >
                 <Link
-                  href="/build"
+                  href={`/builds/${build.id}`}
                   style={{ textDecoration: "none", display: "block" }}
                 >
                   <div

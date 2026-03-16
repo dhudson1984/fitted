@@ -25,7 +25,8 @@ app/
     explore/[category]/page.tsx  # Redirects to /explore?category=X
     looks/[slug]/page.tsx  # Look detail: pieces, styling notes, related looks (server)
     build/page.tsx      # Build a Look: 3-screen flow (upload, analyzing, results) with OpenAI GPT-4o vision; results redesigned with gradient hero, PieceCard grid, "What We Detected" notes; Save This Look button stores to localStorage fitted_builds
-    profile/page.tsx    # User profile: name, email, style prefs from localStorage survey, sizing, budget, saved looks from Supabase + user builds from localStorage; BuildCard component for user-created builds
+    builds/[id]/page.tsx # Saved build detail: client component reads build from localStorage fitted_builds, fetches full piece data from Supabase, renders same layout as curated look detail (hero with thumbnail, "Your Build" badge, piece grid with swap/save/bag); hideSaveButton since builds are already saved
+    profile/page.tsx    # User profile: name, email, style prefs from localStorage survey, sizing, budget, saved looks from Supabase + user builds from localStorage; BuildCard links to /builds/[id]
 components/
   AppNav.tsx            # Fixed top nav bar (glass effect, breadcrumbs, bag icon, profile dropdown)
   MobileMenuDrawer.tsx  # Slide-in mobile menu from left
@@ -59,7 +60,7 @@ components/
     LookBackNav.tsx     # Client: auth-aware back navigation (→ /explore for auth users, → / for unauth)
     LookDetailClient.tsx # Client wrapper: pieces grid with SwapDrawer integration, SaveLookButton, LookBackNav
     SwapDrawer.tsx      # Client: slide-in drawer showing alternative pieces by slot_type from Supabase, with price diff badges and select/bag buttons
-    SavedLooksSection.tsx # Client: dashboard section showing saved outfits (from fitted_saved_looks) and saved items (from fitted_saved_items)
+    SavedLooksSection.tsx # Client: dashboard section showing saved outfits (from fitted_saved_looks), user builds (from fitted_builds → links to /builds/[id]), and saved items (from fitted_saved_items)
     ExploreFilters.tsx  # Client: vibe/occasion/season/sort filter dropdowns
     PickedForYou.tsx    # Client: reads survey lifestyle from localStorage, fetches filtered looks from Supabase
     DashboardWelcome.tsx # Client: full-screen first-time welcome overlay (lifestyle tags, Build/Dashboard CTAs)

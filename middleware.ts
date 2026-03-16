@@ -6,6 +6,7 @@ const protectedPaths = [
   "/dashboard",
   "/explore",
   "/build",
+  "/builds",
   "/profile",
   "/lookboard",
 ];
@@ -54,6 +55,7 @@ export const config = {
     "/dashboard/:path*",
     "/explore/:path*",
     "/build/:path*",
+    "/builds/:path*",
     "/profile/:path*",
     "/lookboard/:path*",
   ],

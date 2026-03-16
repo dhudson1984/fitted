@@ -1185,7 +1185,7 @@ function BuildCard({ build }: { build: SavedBuild }) {
 
   return (
     <Link
-      href="/build"
+      href={`/builds/${build.id}`}
       data-testid={`card-build-${build.id}`}
       style={{
         cursor: "pointer",

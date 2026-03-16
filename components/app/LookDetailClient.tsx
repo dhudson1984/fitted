@@ -14,9 +14,10 @@ interface LookDetailClientProps {
   lookName: string;
   lookSlug: string;
   pieces: (Piece & { sort_order: number })[];
+  hideSaveButton?: boolean;
 }
 
-export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDetailClientProps) {
+export default function LookDetailClient({ lookName, lookSlug, pieces, hideSaveButton }: LookDetailClientProps) {
   const [swapOpen, setSwapOpen] = useState(false);
   const [swapPiece, setSwapPiece] = useState<(Piece & { sort_order: number }) | null>(null);
   const [displayPieces, setDisplayPieces] = useState(pieces);
@@ -135,9 +136,11 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
               )}
             </button>
           </div>
-          <div style={{ flex: 1 }}>
-            <SaveLookButton lookSlug={lookSlug} lookName={lookName} />
-          </div>
+          {!hideSaveButton && (
+            <div style={{ flex: 1 }}>
+              <SaveLookButton lookSlug={lookSlug} lookName={lookName} />
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: 12 }}>
