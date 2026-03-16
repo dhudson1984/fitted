@@ -39,6 +39,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem("userName");
       localStorage.removeItem("fitted_survey");
+      localStorage.removeItem("fitted_saved_looks");
+      localStorage.removeItem("fitted_saved_items");
+      localStorage.removeItem("fitted_builds");
       localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
     document.cookie = "fitted_survey_completed=; path=/; max-age=0";
