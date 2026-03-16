@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getActiveSteps } from "@/lib/survey-data";
 import SurveySidebar from "./SurveySidebar";
 import StepIntro from "./StepIntro";
@@ -13,6 +14,7 @@ import StepBrands from "./StepBrands";
 import StepSwipe from "./StepSwipe";
 
 export default function SurveyShell() {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [lifestyle, setLifestyle] = useState<Set<string>>(new Set());
@@ -53,6 +55,7 @@ export default function SurveyShell() {
   );
 
   const handleFinish = useCallback(() => {
+    document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000; SameSite=Lax";
     try {
       const introData = selections["intro-1"] as { firstName?: string; email?: string } | undefined;
       const firstName = (introData?.firstName || "").trim();
@@ -69,9 +72,8 @@ export default function SurveyShell() {
       }
       localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
-    document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000; SameSite=Lax";
-    window.location.href = "/dashboard";
-  }, [selections, lifestyle]);
+    router.push("/dashboard");
+  }, [selections, lifestyle, router]);
 
   const goNext = useCallback(() => {
     if (current >= total - 1) {
