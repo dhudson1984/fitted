@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
 import { getActiveSteps } from "@/lib/survey-data";
 import SurveySidebar from "./SurveySidebar";
 import StepIntro from "./StepIntro";
@@ -15,13 +13,10 @@ import StepBrands from "./StepBrands";
 import StepSwipe from "./StepSwipe";
 
 export default function SurveyShell() {
-  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [lifestyle, setLifestyle] = useState<Set<string>>(new Set());
   const [selections, setSelections] = useState<Record<string, unknown>>({});
-  const [completed, setCompleted] = useState(false);
-
   const active = useMemo(() => getActiveSteps(lifestyle), [lifestyle]);
   const total = active.length;
   const step = active[current];
@@ -57,27 +52,6 @@ export default function SurveyShell() {
     []
   );
 
-  const goNext = useCallback(() => {
-    if (current >= total - 1) {
-      setCompleted(true);
-      return;
-    }
-    setCurrent(current + 1);
-  }, [current, total]);
-
-  const goBack = useCallback(() => {
-    if (current > 0) setCurrent(current - 1);
-  }, [current]);
-
-  const navigateTo = useCallback(
-    (idx: number) => {
-      if (idx >= 0 && idx < total) {
-        setCurrent(idx);
-      }
-    },
-    [total]
-  );
-
   const handleFinish = useCallback(() => {
     try {
       const introData = selections["intro-1"] as { firstName?: string; email?: string } | undefined;
@@ -96,82 +70,26 @@ export default function SurveyShell() {
     window.location.href = "/dashboard";
   }, [selections, lifestyle]);
 
-  if (completed) {
-    return (
-      <div
-        data-testid="survey-complete"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          textAlign: "center",
-          padding: 48,
-          background: "var(--warm-white)",
-          animation: "fadeUp 0.6s ease",
-        }}
-      >
-        <div
-          data-testid="complete-mark"
-          style={{
-            width: 64,
-            height: 64,
-            border: "1px solid var(--stone)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 28,
-          }}
-        >
-          <Check size={24} style={{ color: "var(--bark)" }} />
-        </div>
-        <h2
-          data-testid="text-complete-title"
-          className="font-display"
-          style={{ fontSize: 42, fontWeight: 300, marginBottom: 10 }}
-        >
-          Your profile is ready.
-        </h2>
-        <p
-          data-testid="text-complete-sub"
-          className="font-body"
-          style={{
-            fontSize: 14,
-            fontWeight: 300,
-            color: "var(--muted)",
-            lineHeight: 1.7,
-            maxWidth: 380,
-            marginBottom: 36,
-          }}
-        >
-          We&apos;ve built your style profile. Time to explore looks curated just for you.
-        </p>
-        <button
-          data-testid="button-go-dashboard"
-          className="font-body"
-          onClick={handleFinish}
-          style={{
-            padding: "16px 44px",
-            background: "var(--charcoal)",
-            color: "var(--cream)",
-            border: "none",
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
-        >
-          Go to My Dashboard →
-        </button>
-      </div>
-    );
-  }
+  const goNext = useCallback(() => {
+    if (current >= total - 1) {
+      handleFinish();
+      return;
+    }
+    setCurrent(current + 1);
+  }, [current, total, handleFinish]);
+
+  const goBack = useCallback(() => {
+    if (current > 0) setCurrent(current - 1);
+  }, [current]);
+
+  const navigateTo = useCallback(
+    (idx: number) => {
+      if (idx >= 0 && idx < total) {
+        setCurrent(idx);
+      }
+    },
+    [total]
+  );
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--warm-white)" }}>
