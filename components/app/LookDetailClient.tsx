@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PieceCard from "./PieceCard";
 import SwapDrawer from "./SwapDrawer";
 import SaveLookButton from "./SaveLookButton";
@@ -17,6 +17,18 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
   const [swapOpen, setSwapOpen] = useState(false);
   const [swapPiece, setSwapPiece] = useState<(Piece & { sort_order: number }) | null>(null);
   const [displayPieces, setDisplayPieces] = useState(pieces);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("fitted_survey");
+      if (raw) {
+        const data = JSON.parse(raw);
+        const name = data?.firstName || data?.["intro-1"]?.firstName || "";
+        setIsAuthenticated(name.trim().length > 0);
+      }
+    } catch {}
+  }, []);
 
   const handleOpenSwap = (piece: Piece & { sort_order: number }) => {
     setSwapPiece(piece);
@@ -33,7 +45,7 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
 
   return (
     <>
-      <LookBackNav />
+      {!isAuthenticated && <LookBackNav />}
 
       <div
         style={{

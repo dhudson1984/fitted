@@ -20,7 +20,7 @@ const BREADCRUMB_MAP: Record<string, { back: string; backLabel: string; crumb: s
   "/explore": { back: "/dashboard", backLabel: "Dashboard", crumb: "Explore" },
   "/build": { back: "/dashboard", backLabel: "Dashboard", crumb: "Build a Look" },
   "/profile": { back: "/dashboard", backLabel: "Dashboard", crumb: "Profile" },
-  "/looks": { back: "/explore", backLabel: "Explore", crumb: "Look Detail" },
+  "/looks": { back: "/dashboard", backLabel: "My Dashboard", crumb: "Look Detail" },
   "/lookboard": { back: "/dashboard", backLabel: "Dashboard", crumb: "Saved Looks" },
 };
 
@@ -37,7 +37,7 @@ export default function AppNav({
   const [profileOpen, setProfileOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  const logoHref = "/";
+  const logoHref = isAuthenticated ? "/dashboard" : "/";
 
   useEffect(() => {
     try {
