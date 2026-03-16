@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, RefreshCw, Wand2, Pencil, Check, X } from "lucide-react";
+import { RefreshCw, Pencil, Check, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Look } from "@/lib/types";
 import LookCard from "@/components/app/LookCard";
@@ -52,6 +52,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
+  const [editLifestyle, setEditLifestyle] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -120,10 +121,12 @@ export default function ProfilePage() {
 
   const startEdit = (section: string) => {
     if (section === "style") {
+      setEditLifestyle([...lifestyle]);
       setEditDraft({
         overallStyle: overallStyle || "",
         workStyle: workStyle || "",
         weekendStyle: weekendStyle || "",
+        fitPref: sizing.shirtFit || sizing.pantsFit || "",
         printsPref: printsPref || "",
       });
     } else if (section === "sizing") {
@@ -151,6 +154,7 @@ export default function ProfilePage() {
   const cancelEdit = () => {
     setEditingSection(null);
     setEditDraft({});
+    setEditLifestyle([]);
   };
 
   const saveEdit = (section: string) => {
@@ -158,10 +162,17 @@ export default function ProfilePage() {
     const updated = { ...survey };
 
     if (section === "style") {
+      updated["lifestyle-1"] = editLifestyle;
+      updated.lifestyle = editLifestyle;
       updated["lifestyle-4"] = editDraft.overallStyle || undefined;
       updated["lifestyle-2"] = editDraft.workStyle || undefined;
       updated["lifestyle-3"] = editDraft.weekendStyle || undefined;
       updated["colors-2"] = editDraft.printsPref || undefined;
+      updated["sizing-1"] = {
+        ...(updated["sizing-1"] || {}),
+        shirtFit: editDraft.fitPref || "",
+        pantsFit: editDraft.fitPref || "",
+      };
     } else if (section === "sizing") {
       updated["sizing-1"] = {
         ...(updated["sizing-1"] || {}),
@@ -188,6 +199,7 @@ export default function ProfilePage() {
     setSurvey(updated);
     setEditingSection(null);
     setEditDraft({});
+    setEditLifestyle([]);
   };
 
   return (
@@ -303,18 +315,28 @@ export default function ProfilePage() {
         onCancel={cancelEdit}
       >
         {editingSection === "style" ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 16,
-              marginBottom: 20,
-            }}
-          >
-            <EditField label="Overall Style" value={editDraft.overallStyle} onChange={(v) => setEditDraft((d) => ({ ...d, overallStyle: v }))} testId="edit-overall" />
-            <EditField label="Work Style" value={editDraft.workStyle} onChange={(v) => setEditDraft((d) => ({ ...d, workStyle: v }))} testId="edit-work" />
-            <EditField label="Weekend Style" value={editDraft.weekendStyle} onChange={(v) => setEditDraft((d) => ({ ...d, weekendStyle: v }))} testId="edit-weekend" />
-            <EditField label="Prints & Patterns" value={editDraft.printsPref} onChange={(v) => setEditDraft((d) => ({ ...d, printsPref: v }))} testId="edit-prints" />
+          <div style={{ marginBottom: 20 }}>
+            <CheckboxGroup
+              label="Lifestyle Categories"
+              options={["Work", "Smart Casual", "Night Out", "Athletic & Outdoors"]}
+              selected={editLifestyle}
+              onChange={setEditLifestyle}
+              testId="edit-lifestyle"
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+                marginTop: 16,
+              }}
+            >
+              <SelectField label="Overall Style" value={editDraft.overallStyle} onChange={(v) => setEditDraft((d) => ({ ...d, overallStyle: v }))} options={["Classic & Clean", "Relaxed & Casual", "Sharp & Polished", "Streetwear Influenced"]} testId="edit-overall" />
+              <SelectField label="Work Style" value={editDraft.workStyle} onChange={(v) => setEditDraft((d) => ({ ...d, workStyle: v }))} options={["Polished & Formal", "Elevated Casual", "Relaxed Professional"]} testId="edit-work" />
+              <SelectField label="Weekend Vibe" value={editDraft.weekendStyle} onChange={(v) => setEditDraft((d) => ({ ...d, weekendStyle: v }))} options={["Timeless", "Sharp", "Effortless"]} testId="edit-weekend" />
+              <SelectField label="Fit Preference" value={editDraft.fitPref} onChange={(v) => setEditDraft((d) => ({ ...d, fitPref: v }))} options={["Slim", "Regular", "Relaxed"]} testId="edit-fit" />
+              <SelectField label="Prints & Patterns" value={editDraft.printsPref} onChange={(v) => setEditDraft((d) => ({ ...d, printsPref: v }))} options={["Love Them", "Open to Them", "Keep It Simple"]} testId="edit-prints" />
+            </div>
           </div>
         ) : (
           <div
@@ -344,8 +366,11 @@ export default function ProfilePage() {
             <PrefCell label="Work Style" testId="pref-work">
               <PrefValue>{workStyle || "Not set"}</PrefValue>
             </PrefCell>
-            <PrefCell label="Weekend Style" testId="pref-weekend">
+            <PrefCell label="Weekend Vibe" testId="pref-weekend">
               <PrefValue>{weekendStyle || "Not set"}</PrefValue>
+            </PrefCell>
+            <PrefCell label="Fit Preference" testId="pref-fit">
+              <PrefValue>{sizing.shirtFit || sizing.pantsFit || "Not set"}</PrefValue>
             </PrefCell>
             <PrefCell label="Color Palettes" testId="pref-colors">
               {colorPalettes.length > 0 ? (
@@ -405,14 +430,14 @@ export default function ProfilePage() {
               marginBottom: 20,
             }}
           >
-            <EditField label="Body Type" value={editDraft.bodyType} onChange={(v) => setEditDraft((d) => ({ ...d, bodyType: v }))} testId="edit-body" />
+            <SelectField label="Body Type" value={editDraft.bodyType} onChange={(v) => setEditDraft((d) => ({ ...d, bodyType: v }))} options={["Slim", "Average", "Athletic", "Broad"]} testId="edit-body" />
             <EditField label="Height" value={editDraft.height} onChange={(v) => setEditDraft((d) => ({ ...d, height: v }))} testId="edit-height" />
             <EditField label="Weight (lbs)" value={editDraft.weight} onChange={(v) => setEditDraft((d) => ({ ...d, weight: v }))} testId="edit-weight" />
-            <EditField label="Shirt Size" value={editDraft.shirtSize} onChange={(v) => setEditDraft((d) => ({ ...d, shirtSize: v }))} testId="edit-shirt-size" />
-            <EditField label="Shirt Fit" value={editDraft.shirtFit} onChange={(v) => setEditDraft((d) => ({ ...d, shirtFit: v }))} testId="edit-shirt-fit" />
+            <SelectField label="Shirt Size" value={editDraft.shirtSize} onChange={(v) => setEditDraft((d) => ({ ...d, shirtSize: v }))} options={["XS", "S", "M", "L", "XL", "XXL"]} testId="edit-shirt-size" />
+            <SelectField label="Shirt Fit" value={editDraft.shirtFit} onChange={(v) => setEditDraft((d) => ({ ...d, shirtFit: v }))} options={["Slim", "Regular", "Relaxed"]} testId="edit-shirt-fit" />
             <EditField label="Pants Waist" value={editDraft.pantsWaist} onChange={(v) => setEditDraft((d) => ({ ...d, pantsWaist: v }))} testId="edit-pants-waist" />
             <EditField label="Pants Inseam" value={editDraft.pantsInseam} onChange={(v) => setEditDraft((d) => ({ ...d, pantsInseam: v }))} testId="edit-pants-inseam" />
-            <EditField label="Pants Fit" value={editDraft.pantsFit} onChange={(v) => setEditDraft((d) => ({ ...d, pantsFit: v }))} testId="edit-pants-fit" />
+            <SelectField label="Pants Fit" value={editDraft.pantsFit} onChange={(v) => setEditDraft((d) => ({ ...d, pantsFit: v }))} options={["Slim", "Straight", "Relaxed"]} testId="edit-pants-fit" />
             <EditField label="Shoe Size" value={editDraft.shoeSize} onChange={(v) => setEditDraft((d) => ({ ...d, shoeSize: v }))} testId="edit-shoe" />
           </div>
         ) : (
@@ -455,14 +480,24 @@ export default function ProfilePage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr",
               gap: 16,
               marginBottom: 20,
             }}
           >
-            <EditField label="Age Range" value={editDraft.ageRange} onChange={(v) => setEditDraft((d) => ({ ...d, ageRange: v }))} testId="edit-age" />
-            <EditField label="Budget Min ($)" value={editDraft.budgetMin} onChange={(v) => setEditDraft((d) => ({ ...d, budgetMin: v }))} testId="edit-budget-min" />
-            <EditField label="Budget Max ($)" value={editDraft.budgetMax} onChange={(v) => setEditDraft((d) => ({ ...d, budgetMax: v }))} testId="edit-budget-max" />
+            <SelectField label="Age Range" value={editDraft.ageRange} onChange={(v) => setEditDraft((d) => ({ ...d, ageRange: v }))} options={["18–24", "25–34", "35–44", "45–54", "55+"]} testId="edit-age" />
+            <SelectField
+              label="Budget Range"
+              value={editDraft.budgetMin && editDraft.budgetMax ? `$${editDraft.budgetMin} – $${editDraft.budgetMax}` : ""}
+              onChange={(v) => {
+                const match = v.match(/\$(\d+)\s*–\s*\$(\d+)/);
+                if (match) {
+                  setEditDraft((d) => ({ ...d, budgetMin: match[1], budgetMax: match[2] }));
+                }
+              }}
+              options={["$25 – $75", "$50 – $150", "$100 – $250", "$200 – $500", "$500 – $1000"]}
+              testId="edit-budget"
+            />
           </div>
         ) : (
           <>
@@ -908,6 +943,130 @@ function EditField({
         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--stone)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
       />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  testId,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  testId: string;
+}) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: 10,
+          letterSpacing: "0.15em",
+          textTransform: "uppercase",
+          color: "var(--muted)",
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </label>
+      <select
+        data-testid={testId}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          padding: "10px 14px",
+          border: "1.5px solid var(--sand)",
+          background: "var(--warm-white)",
+          fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+          fontSize: 13,
+          color: value ? "var(--charcoal)" : "var(--muted)",
+          outline: "none",
+          transition: "border-color 0.2s",
+          cursor: "pointer",
+          appearance: "none",
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 12px center",
+          paddingRight: 32,
+        }}
+      >
+        <option value="">Select...</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function CheckboxGroup({
+  label,
+  options,
+  selected,
+  onChange,
+  testId,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+  testId: string;
+}) {
+  const toggle = (opt: string) => {
+    if (selected.includes(opt)) {
+      onChange(selected.filter((s) => s !== opt));
+    } else {
+      onChange([...selected, opt]);
+    }
+  };
+
+  return (
+    <div data-testid={testId}>
+      <label
+        style={{
+          display: "block",
+          fontSize: 10,
+          letterSpacing: "0.15em",
+          textTransform: "uppercase",
+          color: "var(--muted)",
+          marginBottom: 10,
+        }}
+      >
+        {label}
+      </label>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {options.map((opt) => {
+          const active = selected.includes(opt);
+          return (
+            <button
+              key={opt}
+              type="button"
+              data-testid={`checkbox-${opt.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")}`}
+              onClick={() => toggle(opt)}
+              style={{
+                padding: "8px 16px",
+                border: `1.5px solid ${active ? "var(--charcoal)" : "var(--sand)"}`,
+                background: active ? "var(--charcoal)" : "var(--warm-white)",
+                color: active ? "var(--cream)" : "var(--charcoal)",
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.05em",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
