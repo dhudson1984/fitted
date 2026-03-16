@@ -17,13 +17,14 @@ export default function SaveLookButton({ lookSlug, lookName }: SaveLookButtonPro
   useEffect(() => {
     try {
       const name = localStorage.getItem("userName");
-      setIsAuthenticated(!!name && name.trim().length > 0);
-    } catch {}
+      const authed = !!name && name.trim().length > 0;
+      setIsAuthenticated(authed);
 
-    try {
-      const savedLooks = JSON.parse(localStorage.getItem("fitted_saved_looks") || "[]");
-      if (savedLooks.includes(lookSlug)) {
-        setSaved(true);
+      if (authed) {
+        const savedLooks = JSON.parse(localStorage.getItem("fitted_saved_looks") || "[]");
+        if (savedLooks.includes(lookSlug)) {
+          setSaved(true);
+        }
       }
     } catch {}
   }, [lookSlug]);

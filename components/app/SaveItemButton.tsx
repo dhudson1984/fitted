@@ -25,13 +25,14 @@ export default function SaveItemButton({ piece }: SaveItemButtonProps) {
   useEffect(() => {
     try {
       const name = localStorage.getItem("userName");
-      setIsAuthenticated(!!name && name.trim().length > 0);
-    } catch {}
+      const authed = !!name && name.trim().length > 0;
+      setIsAuthenticated(authed);
 
-    try {
-      const items = JSON.parse(localStorage.getItem("fitted_saved_items") || "[]");
-      if (items.some((i: { pieceId: string }) => i.pieceId === piece.id)) {
-        setSaved(true);
+      if (authed) {
+        const items = JSON.parse(localStorage.getItem("fitted_saved_items") || "[]");
+        if (items.some((i: { pieceId: string }) => i.pieceId === piece.id)) {
+          setSaved(true);
+        }
       }
     } catch {}
   }, [piece.id]);
