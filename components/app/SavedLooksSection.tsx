@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Heart, ShoppingBag, X, ArrowRight, RefreshCw } from "lucide-react";
+import { Heart, ShoppingBag, X, ArrowRight, RefreshCw, Paintbrush } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getGradient } from "@/lib/types";
 import type { Look, Piece } from "@/lib/types";
@@ -16,10 +16,21 @@ interface SavedItem {
   savedAt: string;
 }
 
+interface SavedBuild {
+  id: string;
+  name: string;
+  pieceIds: string[];
+  pieces: { id: string; brand: string; name: string; price: number; price_display: string; slot_type: string; color: string }[];
+  analysis: { formality: string; vibe: string; colors: string[] } | null;
+  thumbnail: string | null;
+  createdAt: string;
+}
+
 export default function SavedLooksSection() {
   const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const [savedLooks, setSavedLooks] = useState<Look[]>([]);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +40,9 @@ export default function SavedLooksSection() {
 
       const items = JSON.parse(localStorage.getItem("fitted_saved_items") || "[]");
       setSavedItems(items);
+
+      const builds = JSON.parse(localStorage.getItem("fitted_builds") || "[]");
+      setSavedBuilds(builds);
     } catch {}
 
     setLoading(false);
@@ -54,6 +68,12 @@ export default function SavedLooksSection() {
     localStorage.setItem("fitted_saved_looks", JSON.stringify(updated));
   };
 
+  const removeBuild = (buildId: string) => {
+    const updated = savedBuilds.filter((b) => b.id !== buildId);
+    setSavedBuilds(updated);
+    localStorage.setItem("fitted_builds", JSON.stringify(updated));
+  };
+
   const removeItem = (pieceId: string) => {
     const updated = savedItems.filter((i) => i.pieceId !== pieceId);
     setSavedItems(updated);
@@ -71,7 +91,9 @@ export default function SavedLooksSection() {
     );
   }
 
-  if (savedSlugs.length === 0 && savedItems.length === 0) return null;
+  const totalOutfits = savedLooks.length + savedBuilds.length;
+
+  if (savedSlugs.length === 0 && savedItems.length === 0 && savedBuilds.length === 0) return null;
 
   return (
     <section id="saved" data-testid="section-saved-looks" style={{ marginBottom: 48 }}>
@@ -106,7 +128,7 @@ export default function SavedLooksSection() {
         </Link>
       </div>
 
-      {savedLooks.length > 0 && (
+      {totalOutfits > 0 && (
         <div style={{ marginBottom: 32 }}>
           <div
             data-testid="text-saved-outfits-label"
@@ -118,7 +140,7 @@ export default function SavedLooksSection() {
               marginBottom: 14,
             }}
           >
-            Saved Outfits ({savedLooks.length})
+            Saved Outfits ({totalOutfits})
           </div>
           <div
             data-testid="saved-outfits-grid"
@@ -128,7 +150,107 @@ export default function SavedLooksSection() {
               gap: 16,
             }}
           >
-            {savedLooks.slice(0, 4).map((look) => {
+            {savedBuilds.slice(0, 4).map((build) => (
+              <div
+                key={build.id}
+                data-testid={`saved-build-${build.id}`}
+                style={{ position: "relative" }}
+              >
+                <Link
+                  href="/build"
+                  style={{ textDecoration: "none", display: "block" }}
+                >
+                  <div
+                    style={{
+                      background: "linear-gradient(165deg, #5C5A6E 0%, #3A3848 40%, #1E1C28 100%)",
+                      height: 160,
+                      display: "flex",
+                      alignItems: "flex-end",
+                      padding: 16,
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {build.thumbnail && (
+                      <img
+                        src={build.thumbnail}
+                        alt={build.name}
+                        data-testid={`img-build-thumb-${build.id}`}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          opacity: 0.4,
+                        }}
+                      />
+                    )}
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontSize: 9,
+                          letterSpacing: "0.15em",
+                          textTransform: "uppercase",
+                          color: "rgba(250,247,242,0.6)",
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Paintbrush size={9} />
+                        Your Build
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                          fontSize: 18,
+                          fontWeight: 300,
+                          color: "rgba(250,247,242,0.95)",
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {build.name}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                <button
+                  data-testid={`button-remove-build-${build.id}`}
+                  onClick={() => removeBuild(build.id)}
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: "rgba(26,26,24,0.5)",
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "rgba(250,247,242,0.7)",
+                    transition: "all 0.2s",
+                    zIndex: 2,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(26,26,24,0.8)";
+                    e.currentTarget.style.color = "rgba(250,247,242,1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(26,26,24,0.5)";
+                    e.currentTarget.style.color = "rgba(250,247,242,0.7)";
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+
+            {savedLooks.slice(0, Math.max(0, 4 - savedBuilds.length)).map((look) => {
               const gradient = getGradient(look);
               return (
                 <div

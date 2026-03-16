@@ -36,6 +36,7 @@ interface SavedBuild {
   pieceIds: string[];
   pieces: { id: string; brand: string; name: string; slot_type: string; color?: string }[];
   analysis: { formality?: string; vibe?: string; colors?: string[] } | null;
+  thumbnail?: string | null;
   createdAt: string;
 }
 
@@ -1207,7 +1208,21 @@ function BuildCard({ build }: { build: SavedBuild }) {
           justifyContent: "space-between",
         }}
       >
-        <div>
+        {build.thumbnail && (
+          <img
+            src={build.thumbnail}
+            alt={build.name}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: 0.35,
+            }}
+          />
+        )}
+        <div style={{ position: "relative", zIndex: 1 }}>
           <div
             style={{
               fontSize: 9,
@@ -1217,7 +1232,7 @@ function BuildCard({ build }: { build: SavedBuild }) {
               marginBottom: 6,
             }}
           >
-            Custom Build &middot; {dateStr}
+            Your Build &middot; {dateStr}
           </div>
           <div
             style={{
@@ -1231,7 +1246,7 @@ function BuildCard({ build }: { build: SavedBuild }) {
             {build.name}
           </div>
         </div>
-        <div>
+        <div style={{ position: "relative", zIndex: 1 }}>
           <div
             style={{
               fontSize: 10,
