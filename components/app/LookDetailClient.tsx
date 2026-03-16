@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ShoppingBag, Check } from "lucide-react";
 import PieceCard from "./PieceCard";
 import SwapDrawer from "./SwapDrawer";
 import SaveLookButton from "./SaveLookButton";
 import LookBackNav from "./LookBackNav";
+import AuthPromptModal from "./AuthPromptModal";
+import { useBag } from "@/components/providers/BagProvider";
 import type { Piece } from "@/lib/types";
 
 interface LookDetailClientProps {
@@ -18,6 +21,9 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
   const [swapPiece, setSwapPiece] = useState<(Piece & { sort_order: number }) | null>(null);
   const [displayPieces, setDisplayPieces] = useState(pieces);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [allAdded, setAllAdded] = useState(false);
+  const { addItem, items } = useBag();
 
   useEffect(() => {
     try {
@@ -25,6 +31,11 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
       setIsAuthenticated(!!name && name.trim().length > 0);
     } catch {}
   }, []);
+
+  useEffect(() => {
+    const allInBag = displayPieces.length > 0 && displayPieces.every((p) => items.some((i) => i.id === p.id));
+    setAllAdded(allInBag);
+  }, [items, displayPieces]);
 
   const handleOpenSwap = (piece: Piece & { sort_order: number }) => {
     setSwapPiece(piece);
@@ -39,6 +50,27 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
     );
   };
 
+  const handleAddAll = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+    displayPieces.forEach((piece) => {
+      if (!items.some((i) => i.id === piece.id)) {
+        addItem({
+          id: piece.id,
+          brand: piece.brand,
+          name: piece.name,
+          price: piece.price,
+          priceStr: piece.price_display,
+          retailer: piece.retailer,
+          look: lookName,
+        });
+      }
+    });
+    setAllAdded(true);
+  };
+
   return (
     <>
       {!isAuthenticated && <LookBackNav />}
@@ -50,8 +82,62 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
           padding: "48px 24px",
         }}
       >
-        <div style={{ maxWidth: 280, marginBottom: 32 }}>
-          <SaveLookButton lookSlug={lookSlug} lookName={lookName} />
+        <div
+          data-testid="look-action-buttons"
+          style={{
+            display: "flex",
+            gap: 12,
+            marginBottom: 32,
+            maxWidth: 520,
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <button
+              data-testid="button-add-all-to-bag"
+              onClick={handleAddAll}
+              disabled={allAdded}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                padding: "13px 16px",
+                background: allAdded ? "var(--stone)" : "var(--charcoal)",
+                color: "var(--cream)",
+                border: "none",
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                cursor: allAdded ? "default" : "pointer",
+                transition: "all 0.2s",
+                opacity: allAdded ? 0.8 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!allAdded) e.currentTarget.style.background = "var(--bark)";
+              }}
+              onMouseLeave={(e) => {
+                if (!allAdded) e.currentTarget.style.background = "var(--charcoal)";
+              }}
+            >
+              {allAdded ? (
+                <>
+                  <Check size={14} />
+                  All Added
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={14} />
+                  Add All to Bag
+                </>
+              )}
+            </button>
+          </div>
+          <div style={{ flex: 1 }}>
+            <SaveLookButton lookSlug={lookSlug} lookName={lookName} />
+          </div>
         </div>
 
         <div style={{ marginBottom: 12 }}>
@@ -106,6 +192,8 @@ export default function LookDetailClient({ lookName, lookSlug, pieces }: LookDet
         lookName={lookName}
         onSwap={handleSwap}
       />
+
+      <AuthPromptModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 }
