@@ -26,11 +26,13 @@ export default function SwapDrawer({ isOpen, onClose, currentPiece, lookName, on
 
   useEffect(() => {
     try {
-      const survey = localStorage.getItem("fitted_survey");
-      setIsAuthenticated(!!survey);
-    } catch {
-      setIsAuthenticated(false);
-    }
+      const raw = localStorage.getItem("fitted_survey");
+      if (raw) {
+        const data = JSON.parse(raw);
+        const name = data?.firstName || data?.["intro-1"]?.firstName || "";
+        setIsAuthenticated(name.trim().length > 0);
+      }
+    } catch {}
   }, []);
 
   const handleKeyDown = useCallback(
