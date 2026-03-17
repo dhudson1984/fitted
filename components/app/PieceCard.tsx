@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import type { Piece } from "@/lib/types";
 import { trackAffiliateClick } from "@/lib/analytics";
 import AddToBagButton from "./AddToBagButton";
 import SaveItemButton from "./SaveItemButton";
+import PieceModal from "./PieceModal";
 
 interface PieceCardProps {
   piece: Piece & { sort_order: number };
@@ -28,8 +30,10 @@ const SLOT_LABELS: Record<string, string> = {
 
 export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCardProps) {
   const slotLabel = SLOT_LABELS[piece.slot_type] || piece.slot_type;
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
+    <>
     <div
       data-testid={`card-piece-${piece.id}`}
       style={{
@@ -39,7 +43,10 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
         flexDirection: "column",
       }}
     >
-      <div
+      <button
+        data-testid={`button-expand-piece-${piece.id}`}
+        onClick={() => setModalOpen(true)}
+        aria-label={`View ${piece.name}`}
         style={{
           width: "100%",
           aspectRatio: "4/3",
@@ -47,7 +54,15 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          border: "none",
+          cursor: "pointer",
+          padding: 0,
+          transition: "background 0.2s",
+          flexDirection: "column",
+          gap: 8,
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "#ede8df")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "var(--cream)")}
       >
         <div
           style={{
@@ -60,7 +75,10 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
         >
           {slotLabel}
         </div>
-      </div>
+        <div style={{ fontSize: 9, letterSpacing: "0.1em", color: "var(--stone)", opacity: 0.6, fontFamily: "'DM Sans', sans-serif" }}>
+          tap to expand
+        </div>
+      </button>
 
       <div style={{ padding: "16px 16px 12px", flex: 1 }}>
         <div
@@ -103,18 +121,28 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
           </div>
         </div>
 
-        <div
-          data-testid={`text-piece-name-${piece.id}`}
+        <button
+          data-testid={`button-piece-name-${piece.id}`}
+          onClick={() => setModalOpen(true)}
           style={{
             fontSize: 14,
             fontWeight: 400,
             color: "var(--charcoal)",
             marginBottom: 6,
             lineHeight: 1.4,
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            textAlign: "left",
+            transition: "color 0.2s",
+            fontFamily: "inherit",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--bark)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--charcoal)")}
         >
-          {piece.name}
-        </div>
+          <span data-testid={`text-piece-name-${piece.id}`}>{piece.name}</span>
+        </button>
 
         <div
           data-testid={`text-piece-price-${piece.id}`}
@@ -266,5 +294,15 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
         )}
       </div>
     </div>
+
+    <PieceModal
+      isOpen={modalOpen}
+      onClose={() => setModalOpen(false)}
+      piece={piece}
+      lookName={lookName}
+      lookSlug={lookSlug}
+      onSwap={onSwap}
+    />
+    </>
   );
 }

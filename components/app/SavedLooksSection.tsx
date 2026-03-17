@@ -6,6 +6,8 @@ import { Heart, ShoppingBag, X, ArrowRight, RefreshCw, Paintbrush } from "lucide
 import { supabase } from "@/lib/supabase";
 import { getGradient } from "@/lib/types";
 import type { Look, Piece } from "@/lib/types";
+import PieceModal from "./PieceModal";
+import type { SavedItemRef } from "./PieceModal";
 
 interface SavedItem {
   pieceId: string;
@@ -32,6 +34,7 @@ export default function SavedLooksSection() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalItem, setModalItem] = useState<SavedItemRef | null>(null);
 
   useEffect(() => {
     try {
@@ -385,7 +388,12 @@ export default function SavedLooksSection() {
                   gap: 16,
                   padding: "14px 20px",
                   background: "var(--warm-white)",
+                  cursor: "pointer",
+                  transition: "background 0.15s",
                 }}
+                onClick={() => setModalItem({ pieceId: item.pieceId, brand: item.brand, name: item.name, price: item.price, priceStr: item.priceStr })}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--cream)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--warm-white)")}
               >
                 <div
                   style={{
@@ -413,7 +421,7 @@ export default function SavedLooksSection() {
                 </div>
                 <button
                   data-testid={`button-remove-item-${item.pieceId}`}
-                  onClick={() => removeItem(item.pieceId)}
+                  onClick={(e) => { e.stopPropagation(); removeItem(item.pieceId); }}
                   style={{
                     background: "none",
                     border: "none",
@@ -433,6 +441,16 @@ export default function SavedLooksSection() {
           </div>
         </div>
       )}
+
+      <PieceModal
+        isOpen={!!modalItem}
+        onClose={() => setModalItem(null)}
+        savedItem={modalItem}
+        onRemoveSavedItem={(pieceId) => {
+          removeItem(pieceId);
+          setModalItem(null);
+        }}
+      />
     </section>
   );
 }
