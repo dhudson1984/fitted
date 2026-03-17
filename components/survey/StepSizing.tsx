@@ -6,10 +6,10 @@ interface StepSizingProps {
 }
 
 const BODY_TYPES = [
-  { id: "slim", label: "Slim" },
-  { id: "average", label: "Average" },
-  { id: "athletic", label: "Athletic" },
-  { id: "broad", label: "Broad" },
+  { id: "slim",     label: "Slim",     desc: "Narrow build" },
+  { id: "average",  label: "Average",  desc: "Medium build" },
+  { id: "athletic", label: "Athletic", desc: "Broad shoulders, tapered waist" },
+  { id: "broad",    label: "Broad",    desc: "Full, wider build" },
 ];
 
 const SHIRT_FITS = ["Slim", "Regular", "Relaxed"];
@@ -33,28 +33,6 @@ const SHOE_SIZES = Array.from({ length: 17 }, (_, i) => {
   const size = 7 + i * 0.5;
   return Number.isInteger(size) ? `${size}` : `${size}`;
 });
-
-const BODY_TYPE_PATHS: Record<string, string> = {
-  slim:     "M15,2 Q24,7 33,2 C34,14 33,30 33,50 L15,50 C15,30 14,14 15,2 Z",
-  average:  "M9,2 Q24,7 39,2 C41,14 38,30 37,50 L11,50 C10,30 7,14 9,2 Z",
-  athletic: "M4,2 Q24,8 44,2 C46,13 37,27 36,50 L12,50 C11,27 2,13 4,2 Z",
-  broad:    "M1,2 Q24,8 47,2 C49,14 42,27 41,50 L7,50 C6,27 -1,14 1,2 Z",
-};
-
-function BodyTypeSvg({ type, selected }: { type: string; selected: boolean }) {
-  return (
-    <svg width="48" height="52" viewBox="0 0 48 52" fill="none">
-      <path
-        d={BODY_TYPE_PATHS[type]}
-        stroke="var(--bark)"
-        strokeWidth="1.75"
-        fill={selected ? "rgba(139,115,85,0.1)" : "none"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export default function StepSizing({ data, onChange }: StepSizingProps) {
   function update(field: string, value: string) {
@@ -98,29 +76,38 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
       <div>
         <div className="font-body" style={{ fontSize: 12, fontWeight: 400, color: "var(--muted)", marginBottom: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>Body Type</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }} className="max-md:!grid-cols-2">
-          {BODY_TYPES.map((bt) => (
-            <button
-              key={bt.id}
-              type="button"
-              onClick={() => update("bodyType", bt.id)}
-              data-testid={`body-type-${bt.id}`}
-              data-selected={data.bodyType === bt.id}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 8,
-                padding: "16px 8px 12px",
-                border: `1.5px solid ${data.bodyType === bt.id ? "var(--charcoal)" : "var(--sand)"}`,
-                background: data.bodyType === bt.id ? "var(--cream)" : "var(--warm-white)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              <BodyTypeSvg type={bt.id} selected={data.bodyType === bt.id} />
-              <span className="font-body" style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", color: data.bodyType === bt.id ? "var(--charcoal)" : "var(--muted)" }}>{bt.label}</span>
-            </button>
-          ))}
+          {BODY_TYPES.map((bt) => {
+            const active = data.bodyType === bt.id;
+            return (
+              <button
+                key={bt.id}
+                type="button"
+                onClick={() => update("bodyType", bt.id)}
+                data-testid={`body-type-${bt.id}`}
+                data-selected={active}
+                className="font-body"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 4,
+                  padding: "14px 16px",
+                  border: `1.5px solid ${active ? "var(--charcoal)" : "var(--sand)"}`,
+                  background: active ? "var(--charcoal)" : "var(--warm-white)",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600, color: active ? "var(--cream)" : "var(--charcoal)" }}>
+                  {bt.label}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 400, color: active ? "rgba(255,248,235,0.65)" : "var(--muted)", lineHeight: 1.35 }}>
+                  {bt.desc}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
