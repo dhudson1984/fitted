@@ -80,9 +80,9 @@ export const SECTIONS: SurveySection[] = [
         type: "single",
         conditional: "work",
         options: [
-          { icon: "👔", label: "Polished & Formal", sub: "Suits, dress shirts" },
-          { icon: "🧥", label: "Elevated Casual", sub: "Smart separates" },
-          { icon: "👕", label: "Relaxed Professional", sub: "Clean, comfortable" },
+          { label: "Polished & Formal", sub: "Suits, dress shirts" },
+          { label: "Elevated Casual", sub: "Smart separates" },
+          { label: "Relaxed Professional", sub: "Clean, comfortable" },
         ],
       },
       {
