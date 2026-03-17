@@ -102,7 +102,9 @@ export default async function DashboardPage() {
           </Link>
         </section>
 
-        <SavedLooksSection />
+        <div id="saved">
+          <SavedLooksSection />
+        </div>
 
         <section data-testid="section-categories" className="mb-12">
           <h2

@@ -18,7 +18,7 @@ export default function MobileBottomNav({ onBagClick, bagCount = 0 }: MobileBott
 
   const homeActive = pathname === "/dashboard";
   const exploreActive = pathname.startsWith("/explore");
-  const savedActive = pathname === "/lookboard";
+  const savedActive = false;
   const profileActive = pathname === "/profile";
 
   return (
@@ -72,7 +72,7 @@ export default function MobileBottomNav({ onBagClick, bagCount = 0 }: MobileBott
       </button>
 
       <Link
-        href="/lookboard"
+        href="/dashboard#saved"
         data-testid="mobile-nav-saved"
         className="flex flex-col items-center justify-center flex-1 no-underline gap-[3px]"
         style={{ color: activeColor(savedActive) }}
