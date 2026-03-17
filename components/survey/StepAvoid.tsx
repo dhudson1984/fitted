@@ -78,25 +78,20 @@ export default function StepAvoid({ data, onChange }: StepAvoidProps) {
               onClick={() => toggleItem(item.label)}
               data-testid={`avoid-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               data-selected={isSelected}
+              className="font-body"
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-                padding: "14px 8px",
+                padding: "12px 16px",
                 border: `1.5px solid ${isSelected ? "var(--charcoal)" : "var(--sand)"}`,
-                background: isSelected ? "var(--cream)" : "var(--warm-white)",
+                background: isSelected ? "var(--charcoal)" : "var(--warm-white)",
+                color: isSelected ? "var(--cream)" : "var(--charcoal)",
                 cursor: "pointer",
                 transition: "all 0.2s",
+                fontSize: 13,
+                fontWeight: 500,
+                textAlign: "center" as const,
               }}
             >
-              <span style={{ fontSize: 22 }}>{item.icon}</span>
-              <span
-                className="font-body"
-                style={{ fontSize: 12, fontWeight: 400, color: "var(--charcoal)" }}
-              >
-                {item.label}
-              </span>
+              {item.label}
             </button>
           );
         })}

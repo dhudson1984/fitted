@@ -28,7 +28,6 @@ export interface PaletteItem {
 }
 
 export interface AvoidItem {
-  icon: string;
   label: string;
 }
 
@@ -219,22 +218,18 @@ export const PALETTES: PaletteItem[] = [
 ];
 
 export const AVOID_ITEMS: AvoidItem[] = [
-  { icon: "👔", label: "Neckwear" },
-  { icon: "📿", label: "Jewelry" },
-  { icon: "🧢", label: "Hats" },
-  { icon: "🕶️", label: "Sunglasses" },
-  { icon: "⌚", label: "Watches" },
-  { icon: "👜", label: "Bags" },
-  { icon: "🧣", label: "Scarves" },
-  { icon: "🩲", label: "Shorts" },
-  { icon: "🥾", label: "Boots" },
-  { icon: "👟", label: "High-tops" },
-  { icon: "👕", label: "Graphic Tees" },
-  { icon: "🦺", label: "Vests" },
-  { icon: "🧤", label: "Gloves" },
-  { icon: "👖", label: "Cargo Pants" },
-  { icon: "🌈", label: "Loud Prints" },
-  { icon: "🏋️", label: "Athleisure" },
+  { label: "Neckwear" },
+  { label: "Hats" },
+  { label: "Sunglasses" },
+  { label: "Watches" },
+  { label: "Bags" },
+  { label: "Scarves" },
+  { label: "Shorts" },
+  { label: "Boots" },
+  { label: "High-tops" },
+  { label: "Graphic Tees" },
+  { label: "Bold Prints" },
+  { label: "Cargo Pants" },
 ];
 
 export const BRAND_SUGGESTIONS = [
