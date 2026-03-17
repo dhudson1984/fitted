@@ -65,10 +65,10 @@ export const SECTIONS: SurveySection[] = [
         hint: "Select all that apply — this shapes every look we build for you.",
         type: "multi",
         options: [
-          { icon: "👔", label: "Work", sub: "Professional settings" },
-          { icon: "😎", label: "Smart Casual", sub: "Weekends, brunch, errands" },
-          { icon: "🏃", label: "Athletic & Outdoors", sub: "Gym, hikes, sport" },
-          { icon: "🌙", label: "Night Out", sub: "Dinner, bars, events" },
+          { label: "Work", sub: "Professional settings" },
+          { label: "Smart Casual", sub: "Weekends, brunch, errands" },
+          { label: "Athletic & Outdoors", sub: "Gym, hikes, sport" },
+          { label: "Night Out", sub: "Dinner, bars, events" },
         ],
       },
       {

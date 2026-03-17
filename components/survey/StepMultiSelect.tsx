@@ -1,7 +1,7 @@
 "use client";
 
 interface StepMultiSelectProps {
-  options: { icon: string; label: string; sub: string }[];
+  options: { icon?: string; label: string; sub: string }[];
   selected: string[];
   onChange: (selected: string[]) => void;
   multi?: boolean;
@@ -51,7 +51,7 @@ export default function StepMultiSelect({ options, selected, onChange, multi = t
               textAlign: "left",
             }}
           >
-            <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{opt.icon}</span>
+            {opt.icon && <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{opt.icon}</span>}
             <div>
               <div
                 className="font-body"
