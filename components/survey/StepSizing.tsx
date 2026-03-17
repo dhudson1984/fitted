@@ -34,57 +34,24 @@ const SHOE_SIZES = Array.from({ length: 17 }, (_, i) => {
   return Number.isInteger(size) ? `${size}` : `${size}`;
 });
 
+const BODY_TYPE_PATHS: Record<string, string> = {
+  slim:     "M15,2 Q24,7 33,2 C34,14 33,30 33,50 L15,50 C15,30 14,14 15,2 Z",
+  average:  "M9,2 Q24,7 39,2 C41,14 38,30 37,50 L11,50 C10,30 7,14 9,2 Z",
+  athletic: "M4,2 Q24,8 44,2 C46,13 37,27 36,50 L12,50 C11,27 2,13 4,2 Z",
+  broad:    "M1,2 Q24,8 47,2 C49,14 42,27 41,50 L7,50 C6,27 -1,14 1,2 Z",
+};
+
 function BodyTypeSvg({ type, selected }: { type: string; selected: boolean }) {
-  const stroke = selected ? "var(--charcoal)" : "var(--stone)";
-  const fill = selected ? "var(--sand)" : "none";
-
-  if (type === "slim") {
-    return (
-      <svg width="40" height="56" viewBox="0 0 40 56" fill="none">
-        <ellipse cx="20" cy="7" rx="5" ry="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
-        <path d="M15 16 C15 16 14 20 14 26 L14 44 C14 46 15 47 16 47 L17 47 L17 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M25 16 C25 16 26 20 26 26 L26 44 C26 46 25 47 24 47 L23 47 L23 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M15 16 C17 15 23 15 25 16" stroke={stroke} strokeWidth="1.5" fill="none" />
-        <path d="M13 18 L11 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M27 18 L29 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (type === "average") {
-    return (
-      <svg width="40" height="56" viewBox="0 0 40 56" fill="none">
-        <ellipse cx="20" cy="7" rx="5.5" ry="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
-        <path d="M13 16 C13 16 12 20 12 26 L13 44 C13 46 14 47 15 47 L17 47 L16 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M27 16 C27 16 28 20 28 26 L27 44 C27 46 26 47 25 47 L23 47 L24 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M13 16 C16 14.5 24 14.5 27 16" stroke={stroke} strokeWidth="1.5" fill="none" />
-        <path d="M11 18 L8 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M29 18 L32 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (type === "athletic") {
-    return (
-      <svg width="40" height="56" viewBox="0 0 40 56" fill="none">
-        <ellipse cx="20" cy="7" rx="6" ry="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
-        <path d="M10 16 C10 18 11 22 12 26 L13 36 L14 44 C14 46 15 47 16 47 L18 47 L17 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M30 16 C30 18 29 22 28 26 L27 36 L26 44 C26 46 25 47 24 47 L22 47 L23 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <path d="M10 16 C14 14 26 14 30 16" stroke={stroke} strokeWidth="1.5" fill="none" />
-        <path d="M8 18 L5 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M32 18 L35 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
   return (
-    <svg width="40" height="56" viewBox="0 0 40 56" fill="none">
-      <ellipse cx="20" cy="7" rx="6.5" ry="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
-      <path d="M9 16 C9 18 9 22 10 26 L11 36 L12 44 C12 46 13 47 14 47 L17 47 L16 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M31 16 C31 18 31 22 30 26 L29 36 L28 44 C28 46 27 47 26 47 L23 47 L24 55" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <path d="M9 16 C13 13.5 27 13.5 31 16" stroke={stroke} strokeWidth="1.5" fill="none" />
-      <path d="M7 18 L4 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M33 18 L36 28" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="48" height="52" viewBox="0 0 48 52" fill="none">
+      <path
+        d={BODY_TYPE_PATHS[type]}
+        stroke="var(--bark)"
+        strokeWidth="1.75"
+        fill={selected ? "rgba(139,115,85,0.1)" : "none"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
