@@ -84,8 +84,12 @@ export default function SurveyShell() {
   }, [current, total, handleFinish]);
 
   const goBack = useCallback(() => {
-    if (current > 0) setCurrent(current - 1);
-  }, [current]);
+    if (current === 0) {
+      router.push("/");
+    } else {
+      setCurrent(current - 1);
+    }
+  }, [current, router]);
 
   const navigateTo = useCallback(
     (idx: number) => {
@@ -277,19 +281,17 @@ export default function SurveyShell() {
             data-testid="button-back"
             className="font-body"
             onClick={goBack}
-            disabled={current === 0}
             style={{
               padding: "12px 28px",
               fontSize: 12,
               fontWeight: 500,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              cursor: current === 0 ? "not-allowed" : "pointer",
+              cursor: "pointer",
               transition: "all 0.2s",
               border: "1.5px solid var(--sand)",
               background: "var(--warm-white)",
               color: "var(--charcoal)",
-              opacity: current === 0 ? 0.3 : 1,
             }}
           >
             ← Back
