@@ -199,9 +199,8 @@ export const PALETTES: PaletteItem[] = [
   { name: "Versatile Neutrals", sub: "Greys, whites, blacks", swatches: ["#2C2C2A", "#7A7268", "#C4B89A", "#F5F0E8"] },
   { name: "Earth Tones", sub: "Browns, tans, terracotta", swatches: ["#5C3D2E", "#8B6914", "#C4A265", "#E8D5B0"] },
   { name: "True Blues", sub: "Navy, slate, sky", swatches: ["#1A2744", "#2E4A7A", "#5B7FA6", "#B8CCE0"] },
-  { name: "Deep & Rich", sub: "Burgundy, forest, plum", swatches: ["#3B1A1A", "#1A3B2A", "#4A1A4A", "#7A3030"] },
   { name: "Natural Greens", sub: "Olive, sage, moss", swatches: ["#2A3020", "#4A5C38", "#7A8C60", "#B8C4A0"] },
-  { name: "Understated Basics", sub: "Cream, oat, warm white", swatches: ["#FAF7F2", "#F0E8D8", "#E0D4C0", "#C8B898"] },
+  { name: "Understated Basics", sub: "Cream, oat, warm white", swatches: ["#EAD9C0", "#D4BF9C", "#BEA47C", "#A08560"] },
 ];
 
 export const AVOID_ITEMS: AvoidItem[] = [
