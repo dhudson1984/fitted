@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, ArrowLeft, User, Heart, LogOut } from "lucide-react";
+import { ShoppingBag, ArrowLeft, User, Heart, LogOut, Settings } from "lucide-react";
 
 
 interface AppNavProps {
@@ -70,18 +70,6 @@ export default function AppNav({
         borderBottom: "1px solid rgba(196,184,154,0.25)",
       }}
     >
-      {isAuthenticated && (
-        <button
-          data-testid="button-hamburger"
-          className="hidden max-md:flex flex-col justify-center gap-[5px] w-9 h-9 bg-transparent border-none cursor-pointer p-1.5 shrink-0"
-          onClick={onHamburgerClick}
-          aria-label="Menu"
-        >
-          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-          <span className="block h-[1.5px] bg-charcoal transition-all origin-center" />
-        </button>
-      )}
 
       <Link
         href={logoHref}
@@ -127,7 +115,7 @@ export default function AppNav({
           <>
             <button
               data-testid="button-bag"
-              className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none"
+              className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none max-md:hidden"
               onClick={onBagClick}
               aria-label="Open bag"
             >
@@ -141,6 +129,15 @@ export default function AppNav({
                 </span>
               )}
             </button>
+
+            <Link
+              href="/profile"
+              data-testid="link-mobile-profile"
+              className="hidden max-md:flex w-9 h-9 items-center justify-center text-charcoal hover:text-bark transition-colors no-underline"
+              aria-label="Profile"
+            >
+              <Settings className="w-[17px] h-[17px]" />
+            </Link>
 
             <div className="relative max-md:hidden" ref={profileRef}>
               <button

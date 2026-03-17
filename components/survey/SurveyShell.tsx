@@ -269,7 +269,7 @@ export default function SurveyShell() {
             borderTop: "1px solid var(--sand)",
             marginTop: "auto",
           }}
-          className="max-md:!px-5"
+          className="max-md:!px-5 max-md:!sticky max-md:!bottom-0 max-md:!bg-[var(--warm-white)] max-md:!z-10"
         >
           <button
             data-testid="button-back"
