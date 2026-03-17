@@ -127,19 +127,6 @@ export const SECTIONS: SurveySection[] = [
         hint: "Select all that feel right — we'll mix them thoughtfully.",
         type: "palette",
       },
-      {
-        id: "colors-2",
-        label: "Prints & patterns",
-        eyebrow: "Section 2 · Colors",
-        question: "How do you feel about prints and patterns?",
-        hint: "",
-        type: "single",
-        options: [
-          { icon: "🎨", label: "Love Them", sub: "Bring on the texture" },
-          { icon: "〰️", label: "Open to Them", sub: "A little goes a long way" },
-          { icon: "◻️", label: "Keep It Simple", sub: "Solids only" },
-        ],
-      },
     ],
   },
   {
