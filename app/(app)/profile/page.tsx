@@ -159,7 +159,8 @@ export default function ProfilePage() {
     } else if (section === "budget") {
       setEditDraft({
         ageRange: basics.ageRange || "",
-        budgetRange: basics.budgetRange || "",
+        budgetMin: basics.budgetMin || "",
+        budgetMax: basics.budgetMax || "",
       });
     }
     setEditingSection(section);
@@ -204,7 +205,8 @@ export default function ProfilePage() {
       updated["basics-1"] = {
         ...(updated["basics-1"] || {}),
         ageRange: editDraft.ageRange,
-        budgetRange: editDraft.budgetRange,
+        budgetMin: editDraft.budgetMin,
+        budgetMax: editDraft.budgetMax,
       };
     }
 
@@ -500,11 +502,18 @@ export default function ProfilePage() {
           >
             <SelectField label="Age Range" value={editDraft.ageRange} onChange={(v) => setEditDraft((d) => ({ ...d, ageRange: v }))} options={["18–24", "25–34", "35–44", "45–54", "55+"]} testId="edit-age" />
             <SelectField
-              label="Per Item Budget"
-              value={editDraft.budgetRange || ""}
-              onChange={(v) => setEditDraft((d) => ({ ...d, budgetRange: v }))}
+              label="Per Item Budget — Min"
+              value={editDraft.budgetMin || ""}
+              onChange={(v) => setEditDraft((d) => ({ ...d, budgetMin: v }))}
               options={["Under $50", "$50–$100", "$100–$150", "$150–$200", "$200–$300", "$300–$500", "$500+"]}
-              testId="edit-budget"
+              testId="edit-budget-min"
+            />
+            <SelectField
+              label="Per Item Budget — Max"
+              value={editDraft.budgetMax || ""}
+              onChange={(v) => setEditDraft((d) => ({ ...d, budgetMax: v }))}
+              options={["Under $50", "$50–$100", "$100–$150", "$150–$200", "$200–$300", "$300–$500", "$500+"]}
+              testId="edit-budget-max"
             />
           </div>
         ) : (
@@ -523,9 +532,9 @@ export default function ProfilePage() {
               </PrefCell>
               <PrefCell label="Per Item Budget" testId="pref-budget">
                 <PrefValue>
-                  {basics.budgetRange
-                    ? basics.budgetRange
-                    : "Not set"}
+                  {basics.budgetMin && basics.budgetMax
+                    ? `${basics.budgetMin} – ${basics.budgetMax}`
+                    : basics.budgetMin || basics.budgetMax || "Not set"}
                 </PrefValue>
               </PrefCell>
             </div>

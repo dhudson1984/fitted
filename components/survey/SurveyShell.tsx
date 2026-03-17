@@ -235,9 +235,10 @@ export default function SurveyShell() {
               {step.type === "basics" && (
                 <StepBasics
                   data={
-                    (selections[step.id] as { ageRange: string; budgetRange: string }) || {
+                    (selections[step.id] as { ageRange: string; budgetMin: string; budgetMax: string }) || {
                       ageRange: "",
-                      budgetRange: "",
+                      budgetMin: "",
+                      budgetMax: "",
                     }
                   }
                   onChange={(val) => updateSelection(step.id, val)}
