@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, ArrowLeft, User, Heart, LogOut } from "lucide-react";
+import { ShoppingBag, ArrowLeft, User, Heart, LogOut, Menu } from "lucide-react";
 
 
 interface AppNavProps {
@@ -117,7 +117,7 @@ export default function AppNav({
           <>
             <button
               data-testid="button-bag"
-              className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none max-md:hidden"
+              className="w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors relative bg-transparent border-none"
               onClick={onBagClick}
               aria-label="Open bag"
             >
@@ -130,6 +130,15 @@ export default function AppNav({
                   {bagCount}
                 </span>
               )}
+            </button>
+
+            <button
+              data-testid="button-hamburger"
+              className="md:hidden w-9 h-9 flex items-center justify-center cursor-pointer text-charcoal hover:text-bark transition-colors bg-transparent border-none"
+              onClick={onHamburgerClick}
+              aria-label="Open menu"
+            >
+              <Menu className="w-[18px] h-[18px]" />
             </button>
 
             <div className="relative max-md:hidden" ref={profileRef}>

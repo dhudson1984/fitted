@@ -22,8 +22,8 @@ interface MobileMenuDrawerProps {
 }
 
 const menuItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Explore Looks", href: "/explore", icon: Diamond },
+  { label: "Home", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Explore", href: "/explore", icon: Diamond },
   { label: "Build a Look", href: "/build", icon: Triangle },
   { label: "Saved", href: "/dashboard#saved", icon: Heart },
   { label: "Profile", href: "/profile", icon: User },

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AppNav from "@/components/AppNav";
 import MobileMenuDrawer from "@/components/MobileMenuDrawer";
 import BagDrawer from "@/components/BagDrawer";
-import MobileBottomNav from "@/components/MobileBottomNav";
+
 import { ToastProvider } from "@/components/Toast";
 import { BagProvider, useBag } from "@/components/providers/BagProvider";
 
@@ -90,13 +90,7 @@ function LooksShellInner({ children }: { children: React.ReactNode }) {
           }}
         />
       )}
-      {isAuthenticated && (
-        <MobileBottomNav
-          onBagClick={() => setBagOpen(true)}
-          bagCount={itemCount}
-        />
-      )}
-      <div style={{ paddingTop: "var(--nav-h)" }} className="mobile-safe-pb">{children}</div>
+      <div style={{ paddingTop: "var(--nav-h)" }}>{children}</div>
     </>
   );
 }
