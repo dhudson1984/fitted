@@ -181,7 +181,7 @@ export default async function ExplorePage({
             data-testid="explore-look-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))",
               gap: 20,
               padding: "8px 0 60px",
             }}
