@@ -79,34 +79,36 @@ export default function AppNav({
         Fitted
       </Link>
 
-      {breadcrumb ? (
-        <>
+      <div className="hidden md:flex items-center gap-3">
+        {breadcrumb ? (
+          <>
+            <Link
+              href={breadcrumb.back}
+              data-testid="button-back"
+              className="flex items-center gap-[7px] text-[12px] tracking-[0.08em] uppercase text-muted hover:text-charcoal transition-colors font-body no-underline"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>{breadcrumb.backLabel}</span>
+            </Link>
+            <span className="text-sand text-sm" data-testid="text-nav-separator">/</span>
+            <span
+              className="text-[12px] tracking-[0.08em] uppercase text-charcoal"
+              data-testid="text-nav-crumb"
+            >
+              {breadcrumb.crumb}
+            </span>
+          </>
+        ) : !isAuthenticated && pathname.startsWith("/looks") ? (
           <Link
-            href={breadcrumb.back}
+            href="/"
             data-testid="button-back"
-            className="flex items-center gap-[7px] text-[12px] max-md:text-[11px] max-md:gap-[5px] tracking-[0.08em] uppercase text-muted hover:text-charcoal transition-colors font-body no-underline"
+            className="flex items-center gap-[7px] text-[12px] tracking-[0.08em] uppercase text-muted hover:text-charcoal transition-colors font-body no-underline"
           >
             <ArrowLeft className="w-3 h-3" />
-            <span>{breadcrumb.backLabel}</span>
+            <span>Home</span>
           </Link>
-          <span className="text-sand text-sm" data-testid="text-nav-separator">/</span>
-          <span
-            className="text-[12px] tracking-[0.08em] uppercase text-charcoal"
-            data-testid="text-nav-crumb"
-          >
-            {breadcrumb.crumb}
-          </span>
-        </>
-      ) : !isAuthenticated && pathname.startsWith("/looks") ? (
-        <Link
-          href="/"
-          data-testid="button-back"
-          className="flex items-center gap-[7px] text-[12px] max-md:text-[11px] max-md:gap-[5px] tracking-[0.08em] uppercase text-muted hover:text-charcoal transition-colors font-body no-underline"
-        >
-          <ArrowLeft className="w-3 h-3" />
-          <span>Home</span>
-        </Link>
-      ) : null}
+        ) : null}
+      </div>
 
       <div className="flex-1" />
 
