@@ -22,23 +22,29 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("image") as File | null;
+    const imageUrl = formData.get("imageUrl") as string | null;
 
-    if (!file) {
+    if (!file && !imageUrl) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "Image must be under 10MB" }, { status: 400 });
-    }
+    let imageContent: { type: "image_url"; image_url: { url: string } };
 
-    const allowedTypes = ["image/jpeg", "image/png"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: "Only JPG and PNG images are accepted" }, { status: 400 });
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: "Image must be under 10MB" }, { status: 400 });
+      }
+      const allowedTypes = ["image/jpeg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json({ error: "Only JPG and PNG images are accepted" }, { status: 400 });
+      }
+      const bytes = await file.arrayBuffer();
+      const base64 = Buffer.from(bytes).toString("base64");
+      const mimeType = file.type || "image/jpeg";
+      imageContent = { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } };
+    } else {
+      imageContent = { type: "image_url", image_url: { url: imageUrl! } };
     }
-
-    const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const mimeType = file.type || "image/jpeg";
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -64,10 +70,7 @@ export async function POST(req: NextRequest) {
 For garment types, map to these slot types: shirt (any top/t-shirt/polo/sweater), pants (any trousers/jeans/shorts), shoes (any footwear), jacket (any outerwear/blazer/coat), accessory (watch/belt/bag/hat/sunglasses).
 Return only valid JSON, no other text.`,
             },
-            {
-              type: "image_url",
-              image_url: { url: `data:${mimeType};base64,${base64}` },
-            },
+            imageContent,
           ],
         },
       ],
@@ -89,7 +92,6 @@ Return only valid JSON, no other text.`,
     const matchedPieces: Record<string, unknown> = {};
 
     for (const slot of SLOT_TYPES) {
-      const garment = analysis.garments?.find((g) => g.type === slot);
       const colors = analysis.dominant_colors || [];
 
       let query = supabase
@@ -113,18 +115,11 @@ Return only valid JSON, no other text.`,
           .eq("slot_type", slot)
           .limit(1);
 
-        if (fallback && fallback.length > 0) {
-          matchedPieces[slot] = fallback[0];
-        } else {
-          matchedPieces[slot] = null;
-        }
+        matchedPieces[slot] = fallback && fallback.length > 0 ? fallback[0] : null;
       }
     }
 
-    return NextResponse.json({
-      analysis,
-      pieces: matchedPieces,
-    });
+    return NextResponse.json({ analysis, pieces: matchedPieces });
   } catch (error: unknown) {
     console.error("Analyze outfit error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";

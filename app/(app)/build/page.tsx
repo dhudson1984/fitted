@@ -79,6 +79,7 @@ export default function BuildPage() {
   const [pieces, setPieces] = useState<MatchedPieces>({});
   const [activeSteps, setActiveSteps] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [confirmedUrl, setConfirmedUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback(async (file: File) => {
@@ -91,6 +92,7 @@ export default function BuildPage() {
       return;
     }
     setError(null);
+    setConfirmedUrl(null);
     setSelectedFile(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
@@ -118,7 +120,7 @@ export default function BuildPage() {
   );
 
   const startAnalysis = useCallback(async () => {
-    if (!selectedFile) return;
+    if (!selectedFile && !confirmedUrl) return;
     setScreen("analyzing");
     setActiveSteps([]);
     setError(null);
@@ -131,7 +133,11 @@ export default function BuildPage() {
 
     try {
       const formData = new FormData();
-      formData.append("image", selectedFile);
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      } else {
+        formData.append("imageUrl", confirmedUrl!);
+      }
 
       const res = await fetch("/api/analyze-outfit", {
         method: "POST",
@@ -156,16 +162,33 @@ export default function BuildPage() {
       setError(message);
       setScreen("upload");
     }
-  }, [selectedFile]);
+  }, [selectedFile, confirmedUrl]);
 
   const resetBuild = useCallback(() => {
     setScreen("upload");
     setSelectedFile(null);
     setPreviewUrl(null);
     setImageBase64(null);
+    setConfirmedUrl(null);
     setAnalysis(null);
     setPieces({});
     setActiveSteps([]);
+    setError(null);
+  }, []);
+
+  const handleUrlConfirm = useCallback((url: string) => {
+    setConfirmedUrl(url);
+    setPreviewUrl(url);
+    setSelectedFile(null);
+    setImageBase64(null);
+    setError(null);
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setConfirmedUrl(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setImageBase64(null);
     setError(null);
   }, []);
 
@@ -173,11 +196,14 @@ export default function BuildPage() {
     return <UploadScreen
       previewUrl={previewUrl}
       selectedFile={selectedFile}
+      confirmedUrl={confirmedUrl}
       error={error}
       fileInputRef={fileInputRef}
       onInputChange={handleInputChange}
       onDrop={handleDrop}
       onAnalyze={startAnalysis}
+      onUrlConfirm={handleUrlConfirm}
+      onClearSelection={handleClearSelection}
     />;
   }
 
@@ -196,20 +222,53 @@ export default function BuildPage() {
 function UploadScreen({
   previewUrl,
   selectedFile,
+  confirmedUrl,
   error,
   fileInputRef,
   onInputChange,
   onDrop,
   onAnalyze,
+  onUrlConfirm,
+  onClearSelection,
 }: {
   previewUrl: string | null;
   selectedFile: File | null;
+  confirmedUrl: string | null;
   error: string | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDrop: (e: React.DragEvent) => void;
   onAnalyze: () => void;
+  onUrlConfirm: (url: string) => void;
+  onClearSelection: () => void;
 }) {
+  const [urlValue, setUrlValue] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
+
+  const hasSelection = !!(selectedFile || confirmedUrl);
+
+  function handleUrlSubmit() {
+    const trimmed = urlValue.trim();
+    if (!trimmed) {
+      setUrlError("Please enter an image URL");
+      return;
+    }
+    try {
+      const u = new URL(trimmed);
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        setUrlError("URL must start with http:// or https://");
+        return;
+      }
+    } catch {
+      setUrlError("Please enter a valid URL (e.g. https://example.com/outfit.jpg)");
+      return;
+    }
+    setUrlError(null);
+    setPreviewFailed(false);
+    onUrlConfirm(trimmed);
+  }
+
   return (
     <div
       data-testid="screen-upload"
@@ -254,49 +313,234 @@ function UploadScreen({
           color: "var(--muted)",
           maxWidth: 420,
           lineHeight: 1.7,
-          marginBottom: 48,
+          marginBottom: 40,
         }}
       >
         Upload a photo of an outfit you love and we&apos;ll find the pieces for you.
       </p>
 
-      <div
-        data-testid="upload-zone"
-        onClick={() => fileInputRef.current?.click()}
-        onDrop={onDrop}
-        onDragOver={(e) => e.preventDefault()}
-        style={{
-          width: "100%",
-          maxWidth: 560,
-          border: previewUrl ? "1.5px solid var(--stone)" : "1.5px dashed var(--stone)",
-          padding: previewUrl ? 0 : "64px 48px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 18,
-          cursor: "pointer",
-          transition: "all 0.3s",
-          background: "var(--warm-white)",
-          position: "relative",
-          marginBottom: 24,
-          overflow: "hidden",
-        }}
-      >
-        {previewUrl ? (
-          <img
-            data-testid="image-preview"
-            src={previewUrl}
-            alt="Selected outfit"
+      {hasSelection ? (
+        /* ── Preview state ── */
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 560,
+            position: "relative",
+            marginBottom: 24,
+            border: "1.5px solid var(--stone)",
+            background: "var(--warm-white)",
+            overflow: "hidden",
+          }}
+        >
+          {!previewFailed && previewUrl && (
+            <img
+              data-testid="image-preview"
+              src={previewUrl}
+              alt="Selected outfit"
+              onError={() => setPreviewFailed(true)}
+              style={{
+                width: "100%",
+                maxHeight: 400,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          )}
+          {previewFailed && confirmedUrl && (
+            <div
+              style={{
+                padding: "36px 24px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  border: "1px solid var(--sand)",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 14px",
+                  color: "var(--stone)",
+                }}
+              >
+                <Upload size={18} />
+              </div>
+              <p style={{ fontSize: 13, color: "var(--charcoal)", marginBottom: 4 }}>
+                Image URL set
+              </p>
+              <p style={{ fontSize: 11, color: "var(--stone)", lineHeight: 1.6, maxWidth: 320, margin: "0 auto" }}>
+                Preview unavailable — the source may block browser loading. The analysis will still work.
+              </p>
+            </div>
+          )}
+          <button
+            data-testid="button-clear-selection"
+            onClick={onClearSelection}
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              background: "rgba(44,44,42,0.72)",
+              color: "var(--cream)",
+              border: "none",
+              padding: "6px 11px",
+              fontSize: 10,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+              fontWeight: 500,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(44,44,42,0.92)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(44,44,42,0.72)")}
+          >
+            <X size={11} />
+            Change
+          </button>
+        </div>
+      ) : (
+        /* ── Selection state ── */
+        <>
+          {/* URL input — PRIMARY option, shown first on all viewports */}
+          <div style={{ width: "100%", maxWidth: 560, marginBottom: 20, textAlign: "left" }}>
+            <p
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--muted)",
+                marginBottom: 10,
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+              }}
+            >
+              Paste an image URL
+            </p>
+            <div style={{ display: "flex" }}>
+              <input
+                data-testid="input-image-url"
+                type="url"
+                value={urlValue}
+                onChange={(e) => {
+                  setUrlValue(e.target.value);
+                  setUrlError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleUrlSubmit();
+                }}
+                placeholder="https://example.com/outfit.jpg"
+                style={{
+                  flex: 1,
+                  padding: "13px 16px",
+                  border: urlError ? "1.5px solid #8B4A2A" : "1.5px solid var(--stone)",
+                  borderRight: "none",
+                  background: "var(--warm-white)",
+                  color: "var(--charcoal)",
+                  fontSize: 13,
+                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                  outline: "none",
+                  minWidth: 0,
+                }}
+              />
+              <button
+                data-testid="button-use-url"
+                onClick={handleUrlSubmit}
+                style={{
+                  flexShrink: 0,
+                  padding: "13px 20px",
+                  background: "var(--charcoal)",
+                  color: "var(--cream)",
+                  border: "none",
+                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
+              >
+                Use Image
+              </button>
+            </div>
+            {urlError && (
+              <p
+                data-testid="text-url-error"
+                style={{
+                  fontSize: 12,
+                  color: "#8B4A2A",
+                  marginTop: 8,
+                  lineHeight: 1.4,
+                }}
+              >
+                {urlError}
+              </p>
+            )}
+          </div>
+
+          {/* — or — divider */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              width: "100%",
+              maxWidth: 560,
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ flex: 1, height: 1, background: "var(--sand)" }} />
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: "var(--stone)",
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+              }}
+            >
+              or
+            </span>
+            <div style={{ flex: 1, height: 1, background: "var(--sand)" }} />
+          </div>
+
+          {/* File upload zone — SECONDARY option, compact on mobile */}
+          <div
+            data-testid="upload-zone"
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={onDrop}
+            onDragOver={(e) => e.preventDefault()}
             style={{
               width: "100%",
-              maxHeight: 400,
-              objectFit: "contain",
-              display: "block",
+              maxWidth: 560,
+              border: "1.5px dashed var(--stone)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 18,
+              cursor: "pointer",
+              transition: "border-color 0.2s",
+              background: "var(--warm-white)",
+              position: "relative",
+              marginBottom: 24,
+              overflow: "hidden",
             }}
-          />
-        ) : (
-          <>
+            className="py-16 px-12 max-md:!flex-row max-md:!gap-3 max-md:!py-4 max-md:!px-5 max-md:!border-solid max-md:!border-[var(--sand)] max-md:!justify-center max-md:!items-center"
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--bark)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--stone)")}
+          >
+            {/* Desktop: circular icon */}
             <div
+              className="max-md:hidden"
               style={{
                 width: 64,
                 height: 64,
@@ -305,42 +549,66 @@ function UploadScreen({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 24,
                 color: "var(--stone)",
+                flexShrink: 0,
               }}
             >
               <Upload size={24} />
             </div>
-            <div
+
+            {/* Mobile: small inline icon */}
+            <Upload
+              size={15}
+              className="md:hidden shrink-0"
+              style={{ color: "var(--muted)" }}
+            />
+
+            {/* Desktop: heading + subtext */}
+            <div className="max-md:hidden" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                  fontSize: 22,
+                  fontWeight: 300,
+                }}
+              >
+                Drop your image here
+              </div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                or click to browse · JPG, PNG up to 10MB
+              </div>
+            </div>
+
+            {/* Mobile: single line label */}
+            <span
+              className="md:hidden"
               style={{
-                fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-                fontSize: 22,
-                fontWeight: 300,
+                fontSize: 13,
+                color: "var(--muted)",
+                fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
               }}
             >
-              Drop your image here
-            </div>
-            <div style={{ fontSize: 12, color: "var(--muted)" }}>
-              or click to browse · JPG, PNG up to 10MB
-            </div>
-          </>
-        )}
-        <input
-          ref={fileInputRef}
-          data-testid="input-file"
-          type="file"
-          accept="image/jpeg,image/png"
-          onChange={onInputChange}
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: 0,
-            cursor: "pointer",
-            width: "100%",
-            height: "100%",
-          }}
-        />
-      </div>
+              Upload a photo from your device
+            </span>
+
+            <input
+              ref={fileInputRef}
+              data-testid="input-file"
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={onInputChange}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                cursor: "pointer",
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          </div>
+        </>
+      )}
 
       {error && (
         <p
@@ -350,6 +618,7 @@ function UploadScreen({
             color: "#8B4A2A",
             marginBottom: 16,
             maxWidth: 560,
+            textAlign: "center",
           }}
         >
           {error}
@@ -358,7 +627,7 @@ function UploadScreen({
 
       <button
         data-testid="button-analyze"
-        disabled={!selectedFile}
+        disabled={!hasSelection}
         onClick={onAnalyze}
         style={{
           width: "100%",
@@ -372,15 +641,15 @@ function UploadScreen({
           fontWeight: 500,
           letterSpacing: "0.15em",
           textTransform: "uppercase",
-          cursor: selectedFile ? "pointer" : "not-allowed",
+          cursor: hasSelection ? "pointer" : "not-allowed",
           transition: "background 0.2s",
-          opacity: selectedFile ? 1 : 0.4,
+          opacity: hasSelection ? 1 : 0.4,
         }}
         onMouseEnter={(e) => {
-          if (selectedFile) e.currentTarget.style.background = "var(--bark)";
+          if (hasSelection) e.currentTarget.style.background = "var(--bark)";
         }}
         onMouseLeave={(e) => {
-          if (selectedFile) e.currentTarget.style.background = "var(--charcoal)";
+          if (hasSelection) e.currentTarget.style.background = "var(--charcoal)";
         }}
       >
         Analyse This Look →
@@ -396,6 +665,8 @@ function AnalyzingScreen({
   previewUrl: string | null;
   activeSteps: number[];
 }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
   return (
     <div
       data-testid="screen-analyzing"
@@ -418,10 +689,11 @@ function AnalyzingScreen({
           overflow: "hidden",
         }}
       >
-        {previewUrl ? (
+        {previewUrl && !imgFailed ? (
           <img
             src={previewUrl}
             alt="Analyzing"
+            onError={() => setImgFailed(true)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
