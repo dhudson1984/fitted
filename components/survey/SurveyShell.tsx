@@ -97,7 +97,7 @@ export default function SurveyShell() {
   );
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--warm-white)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--warm-white)", width: "100%", overflowX: "hidden" }}>
       <SurveySidebar
         current={current}
         visited={visited}
@@ -111,6 +111,8 @@ export default function SurveyShell() {
           display: "flex",
           flexDirection: "column",
           minHeight: "100vh",
+          minWidth: 0,
+          width: "100%",
         }}
         className="max-md:!ml-0"
       >

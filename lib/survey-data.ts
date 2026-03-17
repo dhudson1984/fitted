@@ -94,9 +94,9 @@ export const SECTIONS: SurveySection[] = [
         type: "single",
         conditional: "weekend",
         options: [
-          { icon: "🏛️", label: "Timeless", sub: "Classic, enduring pieces" },
-          { icon: "⚡", label: "Sharp", sub: "Intentional, put-together" },
-          { icon: "🌿", label: "Effortless", sub: "Easy, low-maintenance" },
+          { label: "Timeless", sub: "Classic, enduring pieces" },
+          { label: "Sharp", sub: "Intentional, put-together" },
+          { label: "Effortless", sub: "Easy, low-maintenance" },
         ],
       },
       {
