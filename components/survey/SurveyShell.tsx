@@ -58,35 +58,6 @@ export default function SurveyShell() {
     []
   );
 
-  const handleFinish = useCallback(() => {
-    document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000; SameSite=Lax";
-    try {
-      const introData = selections["intro-1"] as { firstName?: string; email?: string } | undefined;
-      const firstName = (introData?.firstName || "").trim();
-      const email = (introData?.email || "").trim();
-      localStorage.setItem("fitted_survey", JSON.stringify({
-        ...selections,
-        firstName,
-        email,
-        lifestyle: Array.from(lifestyle),
-        completedAt: new Date().toISOString(),
-      }));
-      if (firstName) {
-        localStorage.setItem("userName", firstName);
-      }
-      localStorage.removeItem("fitted_has_seen_welcome");
-    } catch {}
-    window.location.href = "/dashboard";
-  }, [selections, lifestyle]);
-
-  const goNext = useCallback(() => {
-    if (current >= total - 1) {
-      handleFinish();
-      return;
-    }
-    setCurrent(current + 1);
-  }, [current, total, handleFinish]);
-
   const goBack = useCallback(() => {
     if (current === 0) {
       router.push("/");
@@ -300,27 +271,79 @@ export default function SurveyShell() {
           >
             ← Back
           </button>
-          <button
-            data-testid="button-next"
-            className="font-body"
-            onClick={goNext}
-            style={{
-              padding: "12px 28px",
-              fontSize: 12,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              border: "none",
-              background: "var(--charcoal)",
-              color: "var(--cream)",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
-          >
-            {current === total - 1 ? "Finish →" : "Continue →"}
-          </button>
+          {current === total - 1 ? (
+            <button
+              data-testid="button-finish"
+              className="font-body"
+              onClick={async () => {
+                // 1. Save survey data to localStorage
+                try {
+                  const introData = selections["intro-1"] as
+                    | { firstName?: string; email?: string }
+                    | undefined;
+                  const firstName = (introData?.firstName || "").trim();
+                  const email = (introData?.email || "").trim();
+                  localStorage.setItem(
+                    "fitted_survey",
+                    JSON.stringify({
+                      ...selections,
+                      firstName,
+                      email,
+                      lifestyle: Array.from(lifestyle),
+                      completedAt: new Date().toISOString(),
+                    })
+                  );
+                  if (firstName) localStorage.setItem("userName", firstName);
+                  localStorage.removeItem("fitted_has_seen_welcome");
+                } catch {}
+
+                // 2. Set cookie client-side and confirm via server so middleware sees it
+                document.cookie = "fitted_survey_completed=true; path=/";
+                await fetch("/api/survey/complete", { method: "POST" });
+
+                // 3. Navigate to dashboard
+                router.push("/dashboard");
+              }}
+              style={{
+                padding: "12px 28px",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                border: "none",
+                background: "var(--charcoal)",
+                color: "var(--cream)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
+            >
+              Finish →
+            </button>
+          ) : (
+            <button
+              data-testid="button-next"
+              className="font-body"
+              onClick={() => setCurrent((c) => c + 1)}
+              style={{
+                padding: "12px 28px",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                border: "none",
+                background: "var(--charcoal)",
+                color: "var(--cream)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bark)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--charcoal)")}
+            >
+              Continue →
+            </button>
+          )}
         </div>
       </div>
     </div>
