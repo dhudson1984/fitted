@@ -36,7 +36,7 @@ export default function DashboardWelcome() {
           tags.push(...weekendVibe);
         }
 
-        setStyleTags([...new Set(tags)]);
+        setStyleTags(Array.from(new Set(tags)));
         setVisible(true);
       }
     } catch {}

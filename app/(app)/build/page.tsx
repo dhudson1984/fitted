@@ -235,7 +235,7 @@ function UploadScreen({
   selectedFile: File | null;
   confirmedUrl: string | null;
   error: string | null;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDrop: (e: React.DragEvent) => void;
   onAnalyze: () => void;

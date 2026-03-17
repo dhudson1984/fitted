@@ -1,5 +1,5 @@
 export interface SurveyOption {
-  icon: string;
+  icon?: string;
   label: string;
   sub: string;
 }
