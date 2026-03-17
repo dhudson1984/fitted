@@ -214,7 +214,7 @@ export default function BuildPage() {
   return <ResultsScreen
     analysis={analysis}
     pieces={pieces}
-    imageBase64={imageBase64}
+    thumbnailSrc={imageBase64 || confirmedUrl}
     onTryAgain={resetBuild}
   />;
 }
@@ -796,12 +796,12 @@ function AnalyzingScreen({
 function ResultsScreen({
   analysis,
   pieces,
-  imageBase64,
+  thumbnailSrc,
   onTryAgain,
 }: {
   analysis: AnalysisData | null;
   pieces: MatchedPieces;
-  imageBase64: string | null;
+  thumbnailSrc: string | null;
   onTryAgain: () => void;
 }) {
   const [saved, setSaved] = useState(false);
@@ -838,7 +838,7 @@ function ResultsScreen({
         color: p.color,
       })),
       analysis: analysis ? { formality: analysis.formality, vibe: analysis.vibe, colors: analysis.dominant_colors } : null,
-      thumbnail: imageBase64 || null,
+      thumbnail: thumbnailSrc || null,
       createdAt: new Date().toISOString(),
     };
     try {
