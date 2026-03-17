@@ -76,8 +76,8 @@ export default function SurveyShell() {
       }
       localStorage.removeItem("fitted_has_seen_welcome");
     } catch {}
-    router.push("/dashboard");
-  }, [selections, lifestyle, router]);
+    window.location.href = "/dashboard";
+  }, [selections, lifestyle]);
 
   const goNext = useCallback(() => {
     if (current >= total - 1) {
