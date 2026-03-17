@@ -30,6 +30,10 @@ export default function SurveyShell() {
   }, [step]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [current]);
+
+  useEffect(() => {
     if (current >= total && total > 0) {
       setCurrent(total - 1);
     }
@@ -157,7 +161,7 @@ export default function SurveyShell() {
             display: "flex",
             flexDirection: "column",
           }}
-          className="max-md:!px-5 max-md:!py-8 max-md:!max-w-full"
+          className="max-md:!px-5 max-md:!pt-8 max-md:!pb-[88px] max-md:!max-w-full"
         >
           {step && (
             <>
@@ -275,7 +279,7 @@ export default function SurveyShell() {
             borderTop: "1px solid var(--sand)",
             marginTop: "auto",
           }}
-          className="max-md:!px-5 max-md:!sticky max-md:!bottom-0 max-md:!bg-[var(--warm-white)] max-md:!z-10"
+          className="max-md:!fixed max-md:!bottom-0 max-md:!left-0 max-md:!right-0 max-md:!px-5 max-md:!bg-[var(--warm-white)] max-md:!z-50 max-md:!border-t max-md:!border-sand max-md:!py-4 max-md:!mt-0"
         >
           <button
             data-testid="button-back"
