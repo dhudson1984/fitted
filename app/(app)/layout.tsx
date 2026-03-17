@@ -44,6 +44,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("fitted_saved_items");
       localStorage.removeItem("fitted_builds");
       localStorage.removeItem("fitted_has_seen_welcome");
+      localStorage.removeItem("fitted_bag");
     } catch {}
     document.cookie = "fitted_survey_completed=; path=/; max-age=0";
     router.push("/");

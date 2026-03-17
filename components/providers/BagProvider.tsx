@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { BagItem } from "@/components/BagDrawer";
+
+const BAG_KEY = "fitted_bag";
 
 interface BagContextType {
   items: BagItem[];
@@ -25,6 +27,25 @@ export function useBag() {
 
 export function BagProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<BagItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(BAG_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setItems(parsed);
+      }
+    } catch {}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(BAG_KEY, JSON.stringify(items));
+    } catch {}
+  }, [items, hydrated]);
 
   const addItem = useCallback((item: BagItem) => {
     setItems((prev) => {
@@ -39,6 +60,7 @@ export function BagProvider({ children }: { children: React.ReactNode }) {
 
   const clearBag = useCallback(() => {
     setItems([]);
+    try { localStorage.removeItem(BAG_KEY); } catch {}
   }, []);
 
   return (
