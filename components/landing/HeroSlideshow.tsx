@@ -24,7 +24,7 @@ export default function HeroSlideshow() {
   return (
     <section
       data-testid="hero-section"
-      className="max-md:!items-center max-md:!min-h-0 max-md:!pb-8"
+      className="max-md:!min-h-0 max-md:!pb-[90px]"
       style={{
         position: "relative",
         height: "100vh",

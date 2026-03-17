@@ -70,3 +70,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@media (max-width: 767px) {
+  .mobile-safe-pb {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+}

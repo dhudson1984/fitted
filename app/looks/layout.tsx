@@ -96,7 +96,7 @@ function LooksShellInner({ children }: { children: React.ReactNode }) {
           bagCount={itemCount}
         />
       )}
-      <div style={{ paddingTop: "var(--nav-h)" }} className="max-md:pb-[60px]">{children}</div>
+      <div style={{ paddingTop: "var(--nav-h)" }} className="mobile-safe-pb">{children}</div>
     </>
   );
 }

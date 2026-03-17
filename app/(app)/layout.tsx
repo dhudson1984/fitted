@@ -96,7 +96,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           bagCount={itemCount}
         />
       )}
-      <main style={{ paddingTop: "var(--nav-h)" }} className="max-md:pb-[60px]">{children}</main>
+      <main style={{ paddingTop: "var(--nav-h)" }} className="mobile-safe-pb">{children}</main>
     </>
   );
 }

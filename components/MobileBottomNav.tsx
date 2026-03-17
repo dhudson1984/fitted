@@ -26,9 +26,10 @@ export default function MobileBottomNav({ onBagClick, bagCount = 0 }: MobileBott
       data-testid="mobile-bottom-nav"
       className="md:hidden fixed bottom-0 left-0 right-0 z-[200] flex items-stretch"
       style={{
-        height: 60,
         background: "var(--cream)",
         borderTop: "1px solid var(--sand)",
+        paddingTop: 10,
+        paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
       }}
     >
       <Link
