@@ -5,7 +5,6 @@ import { ShoppingBag, Check } from "lucide-react";
 import PieceCard from "./PieceCard";
 import SwapDrawer from "./SwapDrawer";
 import SaveLookButton from "./SaveLookButton";
-import LookBackNav from "./LookBackNav";
 import AuthPromptModal from "./AuthPromptModal";
 import { useBag } from "@/components/providers/BagProvider";
 import type { Piece } from "@/lib/types";
@@ -74,7 +73,6 @@ export default function LookDetailClient({ lookName, lookSlug, pieces, hideSaveB
 
   return (
     <>
-      {!isAuthenticated && <LookBackNav />}
 
       <div
         style={{
