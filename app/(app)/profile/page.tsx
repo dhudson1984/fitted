@@ -8,6 +8,20 @@ import { supabase } from "@/lib/supabase";
 import type { Look } from "@/lib/types";
 import LookCard from "@/components/app/LookCard";
 
+const PROFILE_HEIGHTS = Array.from({ length: 19 }, (_, i) => {
+  const totalInches = 60 + i;
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  return `${feet}'${inches}"`;
+});
+const PROFILE_WEIGHTS = Array.from({ length: 33 }, (_, i) => `${120 + i * 5} lbs`);
+const PROFILE_PANTS_WAISTS = Array.from({ length: 15 }, (_, i) => `${28 + i}`);
+const PROFILE_PANTS_INSEAMS = ["28", "29", "30", "31", "32", "33", "34", "36"];
+const PROFILE_SHOE_SIZES = Array.from({ length: 17 }, (_, i) => {
+  const size = 7 + i * 0.5;
+  return `${size}`;
+});
+
 interface SurveyData {
   firstName?: string;
   email?: string;
@@ -432,14 +446,14 @@ export default function ProfilePage() {
             }}
           >
             <SelectField label="Body Type" value={editDraft.bodyType} onChange={(v) => setEditDraft((d) => ({ ...d, bodyType: v }))} options={["Slim", "Average", "Athletic", "Broad"]} testId="edit-body" />
-            <EditField label="Height" value={editDraft.height} onChange={(v) => setEditDraft((d) => ({ ...d, height: v }))} testId="edit-height" />
-            <EditField label="Weight (lbs)" value={editDraft.weight} onChange={(v) => setEditDraft((d) => ({ ...d, weight: v }))} testId="edit-weight" />
+            <SelectField label="Height" value={editDraft.height} onChange={(v) => setEditDraft((d) => ({ ...d, height: v }))} options={PROFILE_HEIGHTS} testId="edit-height" />
+            <SelectField label="Weight" value={editDraft.weight} onChange={(v) => setEditDraft((d) => ({ ...d, weight: v }))} options={PROFILE_WEIGHTS} testId="edit-weight" />
             <SelectField label="Shirt Size" value={editDraft.shirtSize} onChange={(v) => setEditDraft((d) => ({ ...d, shirtSize: v }))} options={["XS", "S", "M", "L", "XL", "XXL"]} testId="edit-shirt-size" />
             <SelectField label="Shirt Fit" value={editDraft.shirtFit} onChange={(v) => setEditDraft((d) => ({ ...d, shirtFit: v }))} options={["Slim", "Regular", "Relaxed"]} testId="edit-shirt-fit" />
-            <EditField label="Pants Waist" value={editDraft.pantsWaist} onChange={(v) => setEditDraft((d) => ({ ...d, pantsWaist: v }))} testId="edit-pants-waist" />
-            <EditField label="Pants Inseam" value={editDraft.pantsInseam} onChange={(v) => setEditDraft((d) => ({ ...d, pantsInseam: v }))} testId="edit-pants-inseam" />
+            <SelectField label="Pants Waist" value={editDraft.pantsWaist} onChange={(v) => setEditDraft((d) => ({ ...d, pantsWaist: v }))} options={PROFILE_PANTS_WAISTS} testId="edit-pants-waist" />
+            <SelectField label="Pants Inseam" value={editDraft.pantsInseam} onChange={(v) => setEditDraft((d) => ({ ...d, pantsInseam: v }))} options={PROFILE_PANTS_INSEAMS} testId="edit-pants-inseam" />
             <SelectField label="Pants Fit" value={editDraft.pantsFit} onChange={(v) => setEditDraft((d) => ({ ...d, pantsFit: v }))} options={["Slim", "Straight", "Relaxed"]} testId="edit-pants-fit" />
-            <EditField label="Shoe Size" value={editDraft.shoeSize} onChange={(v) => setEditDraft((d) => ({ ...d, shoeSize: v }))} testId="edit-shoe" />
+            <SelectField label="Shoe Size" value={editDraft.shoeSize} onChange={(v) => setEditDraft((d) => ({ ...d, shoeSize: v }))} options={PROFILE_SHOE_SIZES} testId="edit-shoe" />
           </div>
         ) : (
           <div
@@ -453,7 +467,7 @@ export default function ProfilePage() {
           >
             <SizingCell label="Body Type" value={sizing.bodyType || "Not set"} testId="sizing-body" />
             <SizingCell label="Height" value={sizing.height || "Not set"} testId="sizing-height" />
-            <SizingCell label="Weight" value={sizing.weight ? `${sizing.weight} lbs` : "Not set"} testId="sizing-weight" />
+            <SizingCell label="Weight" value={sizing.weight ? (sizing.weight.includes("lbs") ? sizing.weight : `${sizing.weight} lbs`) : "Not set"} testId="sizing-weight" />
             <SizingCell label="Shirt Size" value={sizing.shirtSize || "Not set"} sub={sizing.shirtFit} testId="sizing-shirt" />
             <SizingCell
               label="Pants"
