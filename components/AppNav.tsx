@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, ArrowLeft, User, Heart, LogOut, Settings } from "lucide-react";
+import { ShoppingBag, ArrowLeft, User, Heart, LogOut } from "lucide-react";
 
 
 interface AppNavProps {
@@ -129,15 +129,6 @@ export default function AppNav({
                 </span>
               )}
             </button>
-
-            <Link
-              href="/profile"
-              data-testid="link-mobile-profile"
-              className="hidden max-md:flex w-9 h-9 items-center justify-center text-charcoal hover:text-bark transition-colors no-underline"
-              aria-label="Profile"
-            >
-              <Settings className="w-[17px] h-[17px]" />
-            </Link>
 
             <div className="relative max-md:hidden" ref={profileRef}>
               <button
