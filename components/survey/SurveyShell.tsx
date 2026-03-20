@@ -12,6 +12,7 @@ import StepSizing from "./StepSizing";
 import StepBasics from "./StepBasics";
 import StepBrands from "./StepBrands";
 import StepSwipe from "./StepSwipe";
+import SaveProfileModal from "@/components/auth/SaveProfileModal";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,6 +40,8 @@ export default function SurveyShell() {
   const [lifestyle, setLifestyle] = useState<Set<string>>(new Set());
   const [selections, setSelections] = useState<Record<string, unknown>>({});
   const [stepErrors, setStepErrors] = useState<StepErrors>({});
+  const [showSaveProfile, setShowSaveProfile] = useState(false);
+  const [surveyEmail, setSurveyEmail] = useState("");
   const active = useMemo(() => getActiveSteps(lifestyle), [lifestyle]);
   const total = active.length;
   const step = active[current];
@@ -378,12 +381,13 @@ export default function SurveyShell() {
               className="font-body"
               onClick={async () => {
                 // 1. Save survey data to localStorage
+                let email = "";
                 try {
                   const introData = selections["intro-1"] as
                     | { firstName?: string; email?: string }
                     | undefined;
                   const firstName = (introData?.firstName || "").trim();
-                  const email = (introData?.email || "").trim();
+                  email = (introData?.email || "").trim();
                   localStorage.setItem(
                     "fitted_survey",
                     JSON.stringify({
@@ -399,11 +403,12 @@ export default function SurveyShell() {
                 } catch {}
 
                 // 2. Set cookie client-side and confirm via server so middleware sees it
-                document.cookie = "fitted_survey_completed=true; path=/";
+                document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000";
                 await fetch("/api/survey/complete", { method: "POST" });
 
-                // 3. Navigate to dashboard
-                router.push("/dashboard");
+                // 3. Show optional save profile step
+                setSurveyEmail(email);
+                setShowSaveProfile(true);
               }}
               style={{
                 padding: "12px 28px",
@@ -451,6 +456,15 @@ export default function SurveyShell() {
           )}
         </div>
       </div>
+
+      <SaveProfileModal
+        isOpen={showSaveProfile}
+        email={surveyEmail}
+        onDone={() => {
+          setShowSaveProfile(false);
+          router.push("/dashboard");
+        }}
+      />
     </div>
   );
 }

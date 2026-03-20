@@ -12,7 +12,7 @@ const protectedPaths = [
 ];
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
+  let supabaseResponse = NextResponse.next({ request: req });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,11 +22,12 @@ export async function middleware(req: NextRequest) {
         getAll() {
           return req.cookies.getAll().map(({ name, value }) => ({ name, value }));
         },
-        setAll(cookies) {
-          cookies.forEach(({ name, value, options }) => {
-            req.cookies.set({ name, value });
-            res.cookies.set({ name, value, ...options });
-          });
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({ request: req });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
     }
@@ -44,10 +45,14 @@ export async function middleware(req: NextRequest) {
 
   if (isProtected && !session && !hasSurvey) {
     const redirectUrl = new URL("/onboarding", req.url);
-    return NextResponse.redirect(redirectUrl);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
+      redirectResponse.cookies.set(name, value);
+    });
+    return redirectResponse;
   }
 
-  return res;
+  return supabaseResponse;
 }
 
 export const config = {
