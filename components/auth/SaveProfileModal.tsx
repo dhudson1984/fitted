@@ -14,7 +14,10 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
   const [emailValue, setEmailValue] = useState(email);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -36,35 +39,57 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
 
+    setEmailError("");
+    setPasswordError("");
+    setConfirmError("");
+    setServerError("");
+
+    const trimmedEmail = emailValue.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    if (!trimmedEmail) {
+      setEmailError("Email is required.");
+      hasError = true;
+    } else if (!emailRegex.test(trimmedEmail)) {
+      setEmailError("Please enter a valid email address.");
+      hasError = true;
+    }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
+      setPasswordError("Password must be at least 8 characters.");
+      hasError = true;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      setConfirmError("Passwords do not match.");
+      hasError = true;
     }
+    if (hasError) return;
 
+    console.log("[SaveProfileModal] submitting signup for:", trimmedEmail);
     setLoading(true);
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: emailValue.trim(),
+        email: trimmedEmail,
         password,
       });
 
+      console.log("[SaveProfileModal] signUp result:", { data, signUpError });
+
       if (signUpError) {
+        console.error("[SaveProfileModal] signUp error:", signUpError);
         if (signUpError.message.toLowerCase().includes("already registered")) {
-          setError("An account with this email already exists. Sign in instead.");
+          setServerError("An account with this email already exists. Sign in instead.");
         } else {
-          setError(signUpError.message || "Sign up failed. Please try again.");
+          setServerError(signUpError.message || "Sign up failed. Please try again.");
         }
         setLoading(false);
         return;
       }
 
       const user = data.user;
+      console.log("[SaveProfileModal] user created:", user?.id);
+
       if (user) {
         let surveyPayload: Record<string, unknown> = {};
         try {
@@ -87,18 +112,20 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
           } catch { return ""; }
         })();
 
-        await supabase.from("user_profiles").upsert({
+        const { error: upsertError } = await supabase.from("user_profiles").upsert({
           id: user.id,
-          email: emailValue.trim(),
+          email: trimmedEmail,
           first_name: firstName,
           survey_data: surveyPayload,
         });
+        console.log("[SaveProfileModal] upsert result:", { upsertError });
       }
 
       setDone(true);
       setTimeout(() => onDone(), 1800);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("[SaveProfileModal] unexpected error:", err);
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
@@ -246,7 +273,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
               Create a password to access your style profile across devices.
             </p>
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <form noValidate onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
                 <label
                   className="font-body"
@@ -257,14 +284,19 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
                 <input
                   type="email"
                   value={emailValue}
-                  onChange={(e) => { setEmailValue(e.target.value); setError(""); }}
+                  onChange={(e) => { setEmailValue(e.target.value); setEmailError(""); }}
                   data-testid="input-save-profile-email"
                   autoComplete="email"
                   className="font-body"
-                  style={inputStyle}
+                  style={{ ...inputStyle, borderColor: emailError ? "var(--bark)" : "var(--sand)" }}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = emailError ? "var(--bark)" : "var(--sand)")}
                 />
+                {emailError && (
+                  <p data-testid="text-save-profile-email-error" className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                    {emailError}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -277,15 +309,20 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
                   data-testid="input-save-profile-password"
                   placeholder="Min. 8 characters"
                   autoComplete="new-password"
                   className="font-body"
-                  style={inputStyle}
+                  style={{ ...inputStyle, borderColor: passwordError ? "var(--bark)" : "var(--sand)" }}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = passwordError ? "var(--bark)" : "var(--sand)")}
                 />
+                {passwordError && (
+                  <p data-testid="text-save-profile-password-error" className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -298,24 +335,29 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setConfirmError(""); }}
                   data-testid="input-save-profile-confirm"
                   placeholder="Repeat password"
                   autoComplete="new-password"
                   className="font-body"
-                  style={inputStyle}
+                  style={{ ...inputStyle, borderColor: confirmError ? "var(--bark)" : "var(--sand)" }}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = confirmError ? "var(--bark)" : "var(--sand)")}
                 />
+                {confirmError && (
+                  <p data-testid="text-save-profile-confirm-error" className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                    {confirmError}
+                  </p>
+                )}
               </div>
 
-              {error && (
+              {serverError && (
                 <p
                   data-testid="text-save-profile-error"
                   className="font-body"
                   style={{ fontSize: 12, color: "var(--muted)" }}
                 >
-                  {error}
+                  {serverError}
                 </p>
               )}
 
