@@ -19,7 +19,18 @@ interface StepErrors {
   introFirstName?: string;
   introEmail?: string;
   lifestyle?: string;
+  sizing?: Record<string, string>;
 }
+
+const SIZING_REQUIRED: { field: string; message: string }[] = [
+  { field: "bodyType",    message: "Please select your body type" },
+  { field: "shirtFit",   message: "Please select your shirt fit" },
+  { field: "shirtSize",  message: "Please select your shirt size" },
+  { field: "pantsFit",   message: "Please select your pants fit" },
+  { field: "pantsWaist", message: "Please select your pants waist" },
+  { field: "pantsInseam",message: "Please select your pants inseam" },
+  { field: "shoeSize",   message: "Please select your shoe size" },
+];
 
 export default function SurveyShell() {
   const router = useRouter();
@@ -77,6 +88,16 @@ export default function SurveyShell() {
           introEmail: d.email.trim() ? undefined : prev.introEmail,
         }));
       }
+
+      if (stepId === "sizing-1") {
+        const d = value as Record<string, string>;
+        setStepErrors((prev) => {
+          if (!prev.sizing) return prev;
+          const next = { ...prev.sizing };
+          Object.keys(next).forEach((field) => { if (d[field]) delete next[field]; });
+          return { ...prev, sizing: Object.keys(next).length > 0 ? next : undefined };
+        });
+      }
     },
     []
   );
@@ -113,6 +134,18 @@ export default function SurveyShell() {
           ...prev,
           lifestyle: "Please select at least one lifestyle category",
         }));
+        return false;
+      }
+    }
+
+    if (step.id === "sizing-1") {
+      const d = (selections[step.id] as Record<string, string>) || {};
+      const errors: Record<string, string> = {};
+      SIZING_REQUIRED.forEach(({ field, message }) => {
+        if (!d[field]) errors[field] = message;
+      });
+      if (Object.keys(errors).length > 0) {
+        setStepErrors((prev) => ({ ...prev, sizing: errors }));
         return false;
       }
     }
@@ -278,6 +311,7 @@ export default function SurveyShell() {
                 <StepSizing
                   data={(selections[step.id] as Record<string, string>) || {}}
                   onChange={(val) => updateSelection(step.id, val)}
+                  errors={stepErrors.sizing}
                 />
               )}
               {step.type === "basics" && (

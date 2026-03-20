@@ -3,6 +3,7 @@
 interface StepSizingProps {
   data: Record<string, string>;
   onChange: (data: Record<string, string>) => void;
+  errors?: Record<string, string>;
 }
 
 const BODY_TYPES = [
@@ -34,7 +35,19 @@ const SHOE_SIZES = Array.from({ length: 17 }, (_, i) => {
   return Number.isInteger(size) ? `${size}` : `${size}`;
 });
 
-export default function StepSizing({ data, onChange }: StepSizingProps) {
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p
+      className="font-body"
+      style={{ fontSize: 12, color: "var(--muted)", marginTop: 6, lineHeight: 1.4 }}
+    >
+      {message}
+    </p>
+  );
+}
+
+export default function StepSizing({ data, onChange, errors = {} }: StepSizingProps) {
   function update(field: string, value: string) {
     onChange({ ...data, [field]: value });
   }
@@ -73,6 +86,8 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
 
   return (
     <div data-testid="step-sizing" style={{ maxWidth: 620, display: "flex", flexDirection: "column", gap: 32 }}>
+
+      {/* Body Type */}
       <div>
         <div className="font-body" style={{ fontSize: 12, fontWeight: 400, color: "var(--muted)", marginBottom: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>Body Type</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }} className="max-md:!grid-cols-2">
@@ -109,8 +124,10 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
             );
           })}
         </div>
+        <FieldError message={errors.bodyType} />
       </div>
 
+      {/* Height + Weight (both optional) */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div>
           <label className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, display: "block", letterSpacing: "0.06em", textTransform: "uppercase" }} htmlFor="height">Height</label>
@@ -128,6 +145,7 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
         </div>
       </div>
 
+      {/* Shirt Fit */}
       <div>
         <div className="font-body" style={{ fontSize: 12, fontWeight: 400, color: "var(--muted)", marginBottom: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>Shirt Fit</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -135,8 +153,10 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
             <button key={fit} type="button" onClick={() => update("shirtFit", fit)} data-testid={`shirt-fit-${fit.toLowerCase()}`} className="font-body" style={chipStyle(data.shirtFit === fit)}>{fit}</button>
           ))}
         </div>
+        <FieldError message={errors.shirtFit} />
       </div>
 
+      {/* Shirt Size */}
       <div>
         <div className="font-body" style={{ fontSize: 12, fontWeight: 400, color: "var(--muted)", marginBottom: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>Shirt Size</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -144,8 +164,10 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
             <button key={size} type="button" onClick={() => update("shirtSize", size)} data-testid={`shirt-size-${size.toLowerCase()}`} className="font-body" style={chipStyle(data.shirtSize === size)}>{size}</button>
           ))}
         </div>
+        <FieldError message={errors.shirtSize} />
       </div>
 
+      {/* Pants Fit */}
       <div>
         <div className="font-body" style={{ fontSize: 12, fontWeight: 400, color: "var(--muted)", marginBottom: 10, letterSpacing: "0.06em", textTransform: "uppercase" }}>Pants Fit</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -153,32 +175,39 @@ export default function StepSizing({ data, onChange }: StepSizingProps) {
             <button key={fit} type="button" onClick={() => update("pantsFit", fit)} data-testid={`pants-fit-${fit.toLowerCase()}`} className="font-body" style={chipStyle(data.pantsFit === fit)}>{fit}</button>
           ))}
         </div>
+        <FieldError message={errors.pantsFit} />
       </div>
 
+      {/* Pants Waist + Inseam */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div>
           <label className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, display: "block", letterSpacing: "0.06em", textTransform: "uppercase" }} htmlFor="waist">Pants Waist</label>
           <select id="waist" value={data.pantsWaist || ""} onChange={(e) => update("pantsWaist", e.target.value)} data-testid="input-pants-waist" className="font-body" style={selectStyle(!!data.pantsWaist)}>
             <option value="">Select...</option>
-            {PANTS_WAISTS.map((w) => <option key={w} value={w}>{w}"</option>)}
+            {PANTS_WAISTS.map((w) => <option key={w} value={w}>{w}&quot;</option>)}
           </select>
+          <FieldError message={errors.pantsWaist} />
         </div>
         <div>
           <label className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, display: "block", letterSpacing: "0.06em", textTransform: "uppercase" }} htmlFor="inseam">Pants Inseam</label>
           <select id="inseam" value={data.pantsInseam || ""} onChange={(e) => update("pantsInseam", e.target.value)} data-testid="input-pants-inseam" className="font-body" style={selectStyle(!!data.pantsInseam)}>
             <option value="">Select...</option>
-            {PANTS_INSEAMS.map((i) => <option key={i} value={i}>{i}"</option>)}
+            {PANTS_INSEAMS.map((i) => <option key={i} value={i}>{i}&quot;</option>)}
           </select>
+          <FieldError message={errors.pantsInseam} />
         </div>
       </div>
 
+      {/* Shoe Size */}
       <div>
         <label className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, display: "block", letterSpacing: "0.06em", textTransform: "uppercase" }} htmlFor="shoe">Shoe Size</label>
         <select id="shoe" value={data.shoeSize || ""} onChange={(e) => update("shoeSize", e.target.value)} data-testid="input-shoe-size" className="font-body" style={{ ...selectStyle(!!data.shoeSize), maxWidth: 180 }}>
           <option value="">Select...</option>
           {SHOE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <FieldError message={errors.shoeSize} />
       </div>
+
     </div>
   );
 }
