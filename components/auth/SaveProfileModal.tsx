@@ -130,7 +130,6 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
 
         const { error: upsertError } = await supabase.from("user_profiles").upsert({
           id: user.id,
-          email: trimmedEmail,
           first_name: firstName,
           survey_data: surveyPayload,
         });

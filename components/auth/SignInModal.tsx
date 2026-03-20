@@ -121,7 +121,8 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       if (profile) {
         try {
           const firstName = profile.first_name || "";
-          console.log("[SignIn] first_name from profile:", firstName);
+          console.log("[SignIn] raw profile.first_name:", profile.first_name);
+          console.log("[SignIn] writing to localStorage userName:", firstName);
           if (firstName) localStorage.setItem("userName", firstName);
 
           const sd = (profile.survey_data || {}) as Record<string, unknown>;
@@ -143,6 +144,8 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
         } catch (restoreErr) {
           console.error("[SignIn] error restoring profile data:", restoreErr);
         }
+        // Returning user — mark welcome as seen so it never shows on sign-in
+        localStorage.setItem("fitted_has_seen_welcome", "true");
       } else {
         // No profile row — create it now from localStorage (session is active so RLS passes)
         console.log("[SignIn] no profile row found, creating from localStorage…");
@@ -151,8 +154,15 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
             try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
           };
           const parsedSurvey = readJson("fitted_survey", null) as Record<string, unknown> | null;
-          const firstName = (parsedSurvey?.firstName as string) || "";
-          console.log("[SignIn] firstName from localStorage:", firstName);
+          // Priority: survey.firstName → userName key → email prefix
+          const firstName = (
+            (parsedSurvey?.firstName as string) ||
+            localStorage.getItem("userName") ||
+            (user.email ? user.email.split("@")[0] : "")
+          );
+          console.log("[SignIn] raw survey.firstName:", parsedSurvey?.firstName);
+          console.log("[SignIn] firstName resolved:", firstName);
+          console.log("[SignIn] writing to localStorage userName:", firstName);
 
           const surveyPayload = {
             survey: parsedSurvey,
@@ -163,7 +173,6 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
           const { error: createErr } = await supabase.from("user_profiles").upsert({
             id: user.id,
-            email: user.email || "",
             first_name: firstName,
             survey_data: surveyPayload,
           });
@@ -174,17 +183,14 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
           if (parsedSurvey) {
             if (!parsedSurvey.firstName) parsedSurvey.firstName = firstName;
             localStorage.setItem("fitted_survey", JSON.stringify(parsedSurvey));
-          } else {
-            // Absolute fallback — use email prefix so greeting isn't "there"
-            const emailName = user.email ? user.email.split("@")[0] : "";
-            if (emailName) {
-              localStorage.setItem("userName", emailName);
-              localStorage.setItem("fitted_survey", JSON.stringify({ firstName: emailName }));
-            }
+          } else if (firstName) {
+            localStorage.setItem("fitted_survey", JSON.stringify({ firstName }));
           }
         } catch (createErr) {
           console.error("[SignIn] error creating profile row:", createErr);
         }
+        // Returning user — ensure welcome screen is never shown again
+        localStorage.setItem("fitted_has_seen_welcome", "true");
       }
 
       document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000";

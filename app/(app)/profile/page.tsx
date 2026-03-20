@@ -69,6 +69,8 @@ export default function ProfilePage() {
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [editLifestyle, setEditLifestyle] = useState<string[]>([]);
   const [memberSince, setMemberSince] = useState("Recently");
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
 
   useEffect(() => {
     try {
@@ -136,6 +138,26 @@ export default function ProfilePage() {
   const basics = survey?.["basics-1"] || {};
   const brands = survey?.["inspo-1"] || [];
   // memberSince is set via useState/useEffect from fitted_member_since localStorage key
+
+  const saveNameEdit = async () => {
+    const trimmed = editNameValue.trim();
+    if (!trimmed) { setEditingName(false); return; }
+    const updated = survey ? { ...survey, firstName: trimmed } : { firstName: trimmed };
+    localStorage.setItem("fitted_survey", JSON.stringify(updated));
+    localStorage.setItem("userName", trimmed);
+    setSurvey(updated as SurveyData);
+    setEditingName(false);
+    // Best-effort update of the Supabase profile row
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("user_profiles").upsert({
+          id: user.id,
+          first_name: trimmed,
+        });
+      }
+    } catch {}
+  };
 
   const handleRetakeSurvey = () => {
     localStorage.removeItem("fitted_survey");
@@ -271,18 +293,68 @@ export default function ProfilePage() {
           {firstName.charAt(0).toUpperCase()}
         </div>
         <div>
-          <div
-            data-testid="text-name"
-            style={{
-              fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-              fontSize: "clamp(32px, 4vw, 48px)",
-              fontWeight: 300,
-              lineHeight: 1.1,
-              marginBottom: 4,
-            }}
-          >
-            {firstName}
-          </div>
+          {editingName ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+              <input
+                data-testid="input-edit-name"
+                autoFocus
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") saveNameEdit(); if (e.key === "Escape") setEditingName(false); }}
+                style={{
+                  fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                  fontSize: "clamp(24px, 3vw, 36px)",
+                  fontWeight: 300,
+                  lineHeight: 1.1,
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: "1.5px solid var(--charcoal)",
+                  outline: "none",
+                  color: "var(--charcoal)",
+                  width: "200px",
+                  padding: "2px 0",
+                }}
+              />
+              <button
+                data-testid="button-save-name"
+                onClick={saveNameEdit}
+                style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--bark)", background: "none", border: "none", cursor: "pointer" }}
+              >
+                Save
+              </button>
+              <button
+                data-testid="button-cancel-name"
+                onClick={() => setEditingName(false)}
+                style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", background: "none", border: "none", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+              <div
+                data-testid="text-name"
+                style={{
+                  fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                  fontSize: "clamp(32px, 4vw, 48px)",
+                  fontWeight: 300,
+                  lineHeight: 1.1,
+                }}
+              >
+                {firstName}
+              </div>
+              <button
+                data-testid="button-edit-name"
+                onClick={() => { setEditNameValue(firstName === "Guest" ? "" : firstName); setEditingName(true); }}
+                style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", background: "none", border: "none", cursor: "pointer", paddingBottom: 2 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--charcoal)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+              >
+                Edit
+              </button>
+            </div>
+          )}
+
           {email && (
             <div
               data-testid="text-email"
