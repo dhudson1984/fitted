@@ -14,11 +14,8 @@ import StepBrands from "./StepBrands";
 import StepSwipe from "./StepSwipe";
 import SaveProfileModal from "@/components/auth/SaveProfileModal";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 interface StepErrors {
   introFirstName?: string;
-  introEmail?: string;
   lifestyle?: string;
   sizing?: Record<string, string>;
 }
@@ -41,7 +38,6 @@ export default function SurveyShell() {
   const [selections, setSelections] = useState<Record<string, unknown>>({});
   const [stepErrors, setStepErrors] = useState<StepErrors>({});
   const [showSaveProfile, setShowSaveProfile] = useState(false);
-  const [surveyEmail, setSurveyEmail] = useState("");
   const active = useMemo(() => getActiveSteps(lifestyle), [lifestyle]);
   const total = active.length;
   const step = active[current];
@@ -84,11 +80,10 @@ export default function SurveyShell() {
       }
 
       if (stepId === "intro-1") {
-        const d = value as { firstName: string; email: string };
+        const d = value as { firstName: string };
         setStepErrors((prev) => ({
           ...prev,
           introFirstName: d.firstName.trim() ? undefined : prev.introFirstName,
-          introEmail: d.email.trim() ? undefined : prev.introEmail,
         }));
       }
 
@@ -109,23 +104,9 @@ export default function SurveyShell() {
     if (!step) return true;
 
     if (step.type === "intro") {
-      const introData = (selections[step.id] as { firstName: string; email: string }) || {
-        firstName: "",
-        email: "",
-      };
-      const errors: StepErrors = {};
-
+      const introData = (selections[step.id] as { firstName: string }) || { firstName: "" };
       if (!introData.firstName.trim()) {
-        errors.introFirstName = "Please enter your first name";
-      }
-      if (!introData.email.trim()) {
-        errors.introEmail = "Please enter your email address";
-      } else if (!EMAIL_RE.test(introData.email.trim())) {
-        errors.introEmail = "Please enter a valid email address";
-      }
-
-      if (Object.keys(errors).length > 0) {
-        setStepErrors((prev) => ({ ...prev, ...errors }));
+        setStepErrors((prev) => ({ ...prev, introFirstName: "Please enter your first name" }));
         return false;
       }
     }
@@ -277,16 +258,10 @@ export default function SurveyShell() {
               {step.type === "intro" && (
                 <StepIntro
                   data={
-                    (selections[step.id] as { firstName: string; email: string }) || {
-                      firstName: "",
-                      email: "",
-                    }
+                    (selections[step.id] as { firstName: string }) || { firstName: "" }
                   }
                   onChange={(val) => updateSelection(step.id, val)}
-                  errors={{
-                    firstName: stepErrors.introFirstName,
-                    email: stepErrors.introEmail,
-                  }}
+                  errors={{ firstName: stepErrors.introFirstName }}
                 />
               )}
               {(step.type === "multi" || step.type === "single") && step.options && (
@@ -381,19 +356,14 @@ export default function SurveyShell() {
               className="font-body"
               onClick={async () => {
                 // 1. Save survey data to localStorage
-                let email = "";
                 try {
-                  const introData = selections["intro-1"] as
-                    | { firstName?: string; email?: string }
-                    | undefined;
+                  const introData = selections["intro-1"] as { firstName?: string } | undefined;
                   const firstName = (introData?.firstName || "").trim();
-                  email = (introData?.email || "").trim();
                   localStorage.setItem(
                     "fitted_survey",
                     JSON.stringify({
                       ...selections,
                       firstName,
-                      email,
                       lifestyle: Array.from(lifestyle),
                       completedAt: new Date().toISOString(),
                     })
@@ -407,7 +377,6 @@ export default function SurveyShell() {
                 await fetch("/api/survey/complete", { method: "POST" });
 
                 // 3. Show optional save profile step
-                setSurveyEmail(email);
                 setShowSaveProfile(true);
               }}
               style={{
@@ -459,7 +428,7 @@ export default function SurveyShell() {
 
       <SaveProfileModal
         isOpen={showSaveProfile}
-        email={surveyEmail}
+        email=""
         onDone={() => {
           setShowSaveProfile(false);
           router.push("/dashboard");

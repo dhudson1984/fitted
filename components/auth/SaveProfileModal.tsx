@@ -4,6 +4,26 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+function formatAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Too many attempts. Please try again in a few minutes.";
+  }
+  if (m.includes("already registered") || m.includes("user already exists")) {
+    return "An account with this email already exists. Sign in instead.";
+  }
+  if (m.includes("invalid email") || m.includes("unable to validate")) {
+    return "Please enter a valid email address.";
+  }
+  if (m.includes("weak password") || m.includes("password should")) {
+    return "Password is too weak. Please choose a stronger password.";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Network error. Please check your connection and try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
 interface SaveProfileModalProps {
   isOpen: boolean;
   email: string;
@@ -78,11 +98,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
 
       if (signUpError) {
         console.error("[SaveProfileModal] signUp error:", signUpError);
-        if (signUpError.message.toLowerCase().includes("already registered")) {
-          setServerError("An account with this email already exists. Sign in instead.");
-        } else {
-          setServerError(signUpError.message || "Sign up failed. Please try again.");
-        }
+        setServerError(formatAuthError(signUpError.message));
         setLoading(false);
         return;
       }
@@ -122,7 +138,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
       }
 
       setDone(true);
-      setTimeout(() => onDone(), 1800);
+      setTimeout(() => onDone(), 1500);
     } catch (err) {
       console.error("[SaveProfileModal] unexpected error:", err);
       setServerError("Something went wrong. Please try again.");
