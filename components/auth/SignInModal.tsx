@@ -103,25 +103,53 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", user.id)
         .single();
 
+      console.log("[SignIn] user id:", user.id);
+      console.log("[SignIn] profile row:", profile);
+      console.log("[SignIn] profile error:", profileError);
+
       if (profile) {
         try {
-          if (profile.first_name) localStorage.setItem("userName", profile.first_name);
-          if (profile.survey_data) {
-            const sd = profile.survey_data as Record<string, unknown>;
-            if (sd.survey) localStorage.setItem("fitted_survey", JSON.stringify(sd.survey));
-            if (sd.savedLooks) localStorage.setItem("fitted_saved_looks", JSON.stringify(sd.savedLooks));
-            if (sd.savedItems) localStorage.setItem("fitted_saved_items", JSON.stringify(sd.savedItems));
-            if (sd.builds) localStorage.setItem("fitted_builds", JSON.stringify(sd.builds));
+          // Restore name
+          const firstName = profile.first_name || "";
+          console.log("[SignIn] first_name:", firstName);
+          if (firstName) localStorage.setItem("userName", firstName);
+
+          const sd = (profile.survey_data || {}) as Record<string, unknown>;
+          console.log("[SignIn] survey_data keys:", Object.keys(sd));
+
+          // Restore full survey object — DashboardGreeting reads fitted_survey.firstName
+          if (sd.survey) {
+            const surveyObj = sd.survey as Record<string, unknown>;
+            // Ensure firstName is present in the survey object
+            if (firstName && !surveyObj.firstName) surveyObj.firstName = firstName;
+            localStorage.setItem("fitted_survey", JSON.stringify(surveyObj));
+            console.log("[SignIn] restored fitted_survey, firstName:", surveyObj.firstName);
+          } else if (firstName) {
+            // No survey stored — at minimum write a stub so the greeting works
+            localStorage.setItem("fitted_survey", JSON.stringify({ firstName }));
+            console.log("[SignIn] wrote stub fitted_survey with firstName:", firstName);
           }
-        } catch {}
-      } else if (user.email) {
-        localStorage.setItem("userName", user.email.split("@")[0]);
+
+          if (sd.savedLooks) localStorage.setItem("fitted_saved_looks", JSON.stringify(sd.savedLooks));
+          if (sd.savedItems) localStorage.setItem("fitted_saved_items", JSON.stringify(sd.savedItems));
+          if (sd.builds) localStorage.setItem("fitted_builds", JSON.stringify(sd.builds));
+        } catch (restoreErr) {
+          console.error("[SignIn] error restoring profile data:", restoreErr);
+        }
+      } else {
+        // No profile row — use email-derived name as last resort
+        const fallbackName = user.email ? user.email.split("@")[0] : "";
+        console.log("[SignIn] no profile row, fallback name:", fallbackName);
+        if (fallbackName) {
+          localStorage.setItem("userName", fallbackName);
+          localStorage.setItem("fitted_survey", JSON.stringify({ firstName: fallbackName }));
+        }
       }
 
       document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000";

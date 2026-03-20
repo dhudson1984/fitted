@@ -25,6 +25,11 @@ function getName(): string {
       if (parsed.firstName) return parsed.firstName;
     }
   } catch {}
+  // Fallback: userName key set directly by sign-in flow
+  try {
+    const userName = localStorage.getItem("userName");
+    if (userName) return userName;
+  } catch {}
   return "there";
 }
 

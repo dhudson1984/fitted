@@ -61,69 +61,29 @@ export default function LandingNav() {
           }}
           className="max-md:!hidden"
         >
-          <li>
-            <a
-              href="#how-it-works"
-              data-testid="link-nav-how"
-              className="font-body"
-              style={{
-                fontSize: 13,
-                fontWeight: 400,
-                letterSpacing: "0.08em",
-                color: "var(--charcoal)",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                opacity: 0.7,
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
-            >
-              How It Works
-            </a>
-          </li>
-          <li>
-            <a
-              href="#featured-looks"
-              data-testid="link-nav-explore"
-              className="font-body"
-              style={{
-                fontSize: 13,
-                fontWeight: 400,
-                letterSpacing: "0.08em",
-                color: "var(--charcoal)",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                opacity: 0.7,
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
-            >
-              Explore Looks
-            </a>
-          </li>
-          <li>
-            <a
-              href="#testimonials"
-              data-testid="link-nav-about"
-              className="font-body"
-              style={{
-                fontSize: 13,
-                fontWeight: 400,
-                letterSpacing: "0.08em",
-                color: "var(--charcoal)",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                opacity: 0.7,
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
-            >
-              About
-            </a>
-          </li>
+          {(["#how-it-works", "#featured-looks", "#testimonials"] as const).map((href, i) => (
+            <li key={href}>
+              <a
+                href={href}
+                data-testid={["link-nav-how", "link-nav-explore", "link-nav-about"][i]}
+                className="font-body"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 400,
+                  letterSpacing: "0.08em",
+                  color: scrolled ? "var(--charcoal)" : "var(--cream)",
+                  textDecoration: "none",
+                  textTransform: "uppercase",
+                  opacity: 0.85,
+                  transition: "opacity 0.2s, color 0.4s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.85")}
+              >
+                {["How It Works", "Explore Looks", "About"][i]}
+              </a>
+            </li>
+          ))}
         </ul>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -136,16 +96,16 @@ export default function LandingNav() {
               fontWeight: 400,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "var(--charcoal)",
+              color: scrolled ? "var(--charcoal)" : "var(--cream)",
               background: "none",
               border: "none",
               cursor: "pointer",
-              opacity: 0.7,
-              transition: "opacity 0.2s",
+              opacity: 0.85,
+              transition: "opacity 0.2s, color 0.4s",
               padding: "10px 0",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.85")}
           >
             Sign In
           </button>
