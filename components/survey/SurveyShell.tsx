@@ -13,12 +13,21 @@ import StepBasics from "./StepBasics";
 import StepBrands from "./StepBrands";
 import StepSwipe from "./StepSwipe";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+interface StepErrors {
+  introFirstName?: string;
+  introEmail?: string;
+  lifestyle?: string;
+}
+
 export default function SurveyShell() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [lifestyle, setLifestyle] = useState<Set<string>>(new Set());
   const [selections, setSelections] = useState<Record<string, unknown>>({});
+  const [stepErrors, setStepErrors] = useState<StepErrors>({});
   const active = useMemo(() => getActiveSteps(lifestyle), [lifestyle]);
   const total = active.length;
   const step = active[current];
@@ -31,6 +40,7 @@ export default function SurveyShell() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setStepErrors({});
   }, [current]);
 
   useEffect(() => {
@@ -50,13 +60,65 @@ export default function SurveyShell() {
   const updateSelection = useCallback(
     (stepId: string, value: unknown) => {
       setSelections((prev) => ({ ...prev, [stepId]: value }));
+
       if (stepId === "lifestyle-1") {
         const arr = value as string[];
         setLifestyle(new Set(arr));
+        if (arr.length > 0) {
+          setStepErrors((prev) => ({ ...prev, lifestyle: undefined }));
+        }
+      }
+
+      if (stepId === "intro-1") {
+        const d = value as { firstName: string; email: string };
+        setStepErrors((prev) => ({
+          ...prev,
+          introFirstName: d.firstName.trim() ? undefined : prev.introFirstName,
+          introEmail: d.email.trim() ? undefined : prev.introEmail,
+        }));
       }
     },
     []
   );
+
+  function validateCurrentStep(): boolean {
+    if (!step) return true;
+
+    if (step.type === "intro") {
+      const introData = (selections[step.id] as { firstName: string; email: string }) || {
+        firstName: "",
+        email: "",
+      };
+      const errors: StepErrors = {};
+
+      if (!introData.firstName.trim()) {
+        errors.introFirstName = "Please enter your first name";
+      }
+      if (!introData.email.trim()) {
+        errors.introEmail = "Please enter your email address";
+      } else if (!EMAIL_RE.test(introData.email.trim())) {
+        errors.introEmail = "Please enter a valid email address";
+      }
+
+      if (Object.keys(errors).length > 0) {
+        setStepErrors((prev) => ({ ...prev, ...errors }));
+        return false;
+      }
+    }
+
+    if (step.id === "lifestyle-1") {
+      const selected = (selections[step.id] as string[]) || [];
+      if (selected.length === 0) {
+        setStepErrors((prev) => ({
+          ...prev,
+          lifestyle: "Please select at least one lifestyle category",
+        }));
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   const goBack = useCallback(() => {
     if (current === 0) {
@@ -185,6 +247,10 @@ export default function SurveyShell() {
                     }
                   }
                   onChange={(val) => updateSelection(step.id, val)}
+                  errors={{
+                    firstName: stepErrors.introFirstName,
+                    email: stepErrors.introEmail,
+                  }}
                 />
               )}
               {(step.type === "multi" || step.type === "single") && step.options && (
@@ -193,6 +259,7 @@ export default function SurveyShell() {
                   selected={((selections[step.id] as string[]) || [])}
                   onChange={(val) => updateSelection(step.id, val)}
                   multi={step.type === "multi"}
+                  error={step.id === "lifestyle-1" ? stepErrors.lifestyle : undefined}
                 />
               )}
               {step.type === "palette" && (
@@ -325,7 +392,11 @@ export default function SurveyShell() {
             <button
               data-testid="button-next"
               className="font-body"
-              onClick={() => setCurrent((c) => c + 1)}
+              onClick={() => {
+                if (validateCurrentStep()) {
+                  setCurrent((c) => c + 1);
+                }
+              }}
               style={{
                 padding: "12px 28px",
                 fontSize: 12,
