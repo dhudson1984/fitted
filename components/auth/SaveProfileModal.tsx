@@ -11,6 +11,7 @@ interface SaveProfileModalProps {
 }
 
 export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileModalProps) {
+  const [emailValue, setEmailValue] = useState(email);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -49,7 +50,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
     setLoading(true);
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: emailValue.trim(),
         password,
       });
 
@@ -88,7 +89,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
 
         await supabase.from("user_profiles").upsert({
           id: user.id,
-          email: email.trim(),
+          email: emailValue.trim(),
           first_name: firstName,
           survey_data: surveyPayload,
         });
@@ -198,7 +199,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
               Profile saved.
             </h2>
             <p className="font-body" style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>
-              {email.includes("@") && !email.startsWith("user")
+              {emailValue.includes("@") && !emailValue.startsWith("user")
                 ? "Check your inbox to confirm your email."
                 : "You're all set."}
             </p>
@@ -255,11 +256,14 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
                 </label>
                 <input
                   type="email"
-                  value={email}
-                  readOnly
+                  value={emailValue}
+                  onChange={(e) => { setEmailValue(e.target.value); setError(""); }}
                   data-testid="input-save-profile-email"
+                  autoComplete="email"
                   className="font-body"
-                  style={{ ...inputStyle, color: "var(--muted)", cursor: "default" }}
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
                 />
               </div>
 
@@ -296,7 +300,7 @@ export default function SaveProfileModal({ isOpen, email, onDone }: SaveProfileM
                   value={confirmPassword}
                   onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
                   data-testid="input-save-profile-confirm"
-                  placeholder="••••••••"
+                  placeholder="Repeat password"
                   autoComplete="new-password"
                   className="font-body"
                   style={inputStyle}
