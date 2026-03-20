@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -9,10 +10,27 @@ interface SignInModalProps {
   onClose: () => void;
 }
 
+function formatSignInError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials") || m.includes("email not confirmed")) {
+    return "Incorrect email or password. Please try again.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Too many attempts. Please try again in a few minutes.";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Network error. Please check your connection and try again.";
+  }
+  return "Incorrect email or password. Please try again.";
+}
+
 export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -35,16 +53,37 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
     if (!isOpen) {
       setEmail("");
       setPassword("");
-      setError("");
+      setEmailError("");
+      setPasswordError("");
+      setServerError("");
       setLoading(false);
     }
   }, [isOpen]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
+    setEmailError("");
+    setPasswordError("");
+    setServerError("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    if (!email.trim()) {
+      setEmailError("Email is required.");
+      hasError = true;
+    } else if (!emailRegex.test(email.trim())) {
+      setEmailError("Please enter a valid email address.");
+      hasError = true;
+    }
+    if (!password) {
+      setPasswordError("Password is required.");
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setLoading(true);
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -52,14 +91,14 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       });
 
       if (signInError) {
-        setError("Incorrect email or password. Please try again.");
+        setServerError(formatSignInError(signInError.message));
         setLoading(false);
         return;
       }
 
       const user = data.user;
       if (!user) {
-        setError("Sign in failed. Please try again.");
+        setServerError("Sign in failed. Please try again.");
         setLoading(false);
         return;
       }
@@ -81,29 +120,26 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
             if (sd.builds) localStorage.setItem("fitted_builds", JSON.stringify(sd.builds));
           }
         } catch {}
-      } else {
-        if (user.email) {
-          const name = user.email.split("@")[0];
-          localStorage.setItem("userName", name);
-        }
+      } else if (user.email) {
+        localStorage.setItem("userName", user.email.split("@")[0]);
       }
 
       document.cookie = "fitted_survey_completed=true; path=/; max-age=31536000";
       await fetch("/api/survey/complete", { method: "POST" });
 
-      window.location.href = "/dashboard";
+      onClose();
+      router.push("/dashboard");
     } catch {
-      setError("Something went wrong. Please try again.");
+      setServerError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
 
   if (!isOpen) return null;
 
-  const inputStyle: React.CSSProperties = {
+  const inputBase: React.CSSProperties = {
     width: "100%",
     padding: "12px 14px",
-    border: "1.5px solid var(--sand)",
     background: "transparent",
     fontSize: 14,
     color: "var(--charcoal)",
@@ -188,7 +224,7 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
           data-testid="text-sign-in-title"
           className="font-display"
           style={{
-            fontSize: 28,
+            fontSize: 26,
             fontWeight: 300,
             color: "var(--charcoal)",
             lineHeight: 1.2,
@@ -198,7 +234,7 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
           Welcome back.
         </h2>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <form noValidate onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label
               className="font-body"
@@ -209,15 +245,23 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
             <input
               type="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              onChange={(e) => { setEmail(e.target.value); setEmailError(""); setServerError(""); }}
               data-testid="input-sign-in-email"
               placeholder="you@example.com"
               autoComplete="email"
               className="font-body"
-              style={inputStyle}
+              style={{
+                ...inputBase,
+                border: `1.5px solid ${emailError ? "var(--bark)" : "var(--sand)"}`,
+              }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = emailError ? "var(--bark)" : "var(--sand)")}
             />
+            {emailError && (
+              <p data-testid="text-sign-in-email-error" className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div>
@@ -230,24 +274,32 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
             <input
               type="password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(""); }}
+              onChange={(e) => { setPassword(e.target.value); setPasswordError(""); setServerError(""); }}
               data-testid="input-sign-in-password"
-              placeholder="••••••••"
+              placeholder="Your password"
               autoComplete="current-password"
               className="font-body"
-              style={inputStyle}
+              style={{
+                ...inputBase,
+                border: `1.5px solid ${passwordError ? "var(--bark)" : "var(--sand)"}`,
+              }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "var(--charcoal)")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sand)")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = passwordError ? "var(--bark)" : "var(--sand)")}
             />
+            {passwordError && (
+              <p data-testid="text-sign-in-password-error" className="font-body" style={{ fontSize: 12, color: "var(--muted)", marginTop: 5 }}>
+                {passwordError}
+              </p>
+            )}
           </div>
 
-          {error && (
+          {serverError && (
             <p
               data-testid="text-sign-in-error"
               className="font-body"
-              style={{ fontSize: 12, color: "var(--muted)", marginTop: -4 }}
+              style={{ fontSize: 12, color: "var(--muted)", marginTop: -2 }}
             >
-              {error}
+              {serverError}
             </p>
           )}
 
@@ -287,14 +339,24 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
           }}
         >
           Don&apos;t have an account?{" "}
-          <a
-            href="/onboarding"
-            style={{ color: "var(--bark)", textDecoration: "none" }}
+          <button
+            data-testid="link-sign-in-get-started"
+            onClick={() => { onClose(); router.push("/onboarding"); }}
+            className="font-body"
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontSize: 12,
+              color: "var(--bark)",
+              cursor: "pointer",
+              textDecoration: "none",
+            }}
             onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
             onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
           >
-            Take the style survey
-          </a>
+            Get Started
+          </button>
         </p>
       </div>
     </div>
