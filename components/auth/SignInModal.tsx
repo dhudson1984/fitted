@@ -113,25 +113,26 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       console.log("[SignIn] profile row:", profile);
       console.log("[SignIn] profile error:", profileError);
 
+      // Always persist account creation date for the profile "Member Since" display
+      if (user.created_at) {
+        localStorage.setItem("fitted_member_since", user.created_at);
+      }
+
       if (profile) {
         try {
-          // Restore name
           const firstName = profile.first_name || "";
-          console.log("[SignIn] first_name:", firstName);
+          console.log("[SignIn] first_name from profile:", firstName);
           if (firstName) localStorage.setItem("userName", firstName);
 
           const sd = (profile.survey_data || {}) as Record<string, unknown>;
           console.log("[SignIn] survey_data keys:", Object.keys(sd));
 
-          // Restore full survey object — DashboardGreeting reads fitted_survey.firstName
           if (sd.survey) {
             const surveyObj = sd.survey as Record<string, unknown>;
-            // Ensure firstName is present in the survey object
             if (firstName && !surveyObj.firstName) surveyObj.firstName = firstName;
             localStorage.setItem("fitted_survey", JSON.stringify(surveyObj));
             console.log("[SignIn] restored fitted_survey, firstName:", surveyObj.firstName);
           } else if (firstName) {
-            // No survey stored — at minimum write a stub so the greeting works
             localStorage.setItem("fitted_survey", JSON.stringify({ firstName }));
             console.log("[SignIn] wrote stub fitted_survey with firstName:", firstName);
           }
@@ -143,12 +144,46 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
           console.error("[SignIn] error restoring profile data:", restoreErr);
         }
       } else {
-        // No profile row — use email-derived name as last resort
-        const fallbackName = user.email ? user.email.split("@")[0] : "";
-        console.log("[SignIn] no profile row, fallback name:", fallbackName);
-        if (fallbackName) {
-          localStorage.setItem("userName", fallbackName);
-          localStorage.setItem("fitted_survey", JSON.stringify({ firstName: fallbackName }));
+        // No profile row — create it now from localStorage (session is active so RLS passes)
+        console.log("[SignIn] no profile row found, creating from localStorage…");
+        try {
+          const readJson = (key: string, fallback: unknown) => {
+            try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+          };
+          const parsedSurvey = readJson("fitted_survey", null) as Record<string, unknown> | null;
+          const firstName = (parsedSurvey?.firstName as string) || "";
+          console.log("[SignIn] firstName from localStorage:", firstName);
+
+          const surveyPayload = {
+            survey: parsedSurvey,
+            savedLooks: readJson("fitted_saved_looks", []),
+            savedItems: readJson("fitted_saved_items", []),
+            builds: readJson("fitted_builds", []),
+          };
+
+          const { error: createErr } = await supabase.from("user_profiles").upsert({
+            id: user.id,
+            email: user.email || "",
+            first_name: firstName,
+            survey_data: surveyPayload,
+          });
+          console.log("[SignIn] profile upsert result:", { createErr });
+
+          // Restore localStorage from what we just wrote
+          if (firstName) localStorage.setItem("userName", firstName);
+          if (parsedSurvey) {
+            if (!parsedSurvey.firstName) parsedSurvey.firstName = firstName;
+            localStorage.setItem("fitted_survey", JSON.stringify(parsedSurvey));
+          } else {
+            // Absolute fallback — use email prefix so greeting isn't "there"
+            const emailName = user.email ? user.email.split("@")[0] : "";
+            if (emailName) {
+              localStorage.setItem("userName", emailName);
+              localStorage.setItem("fitted_survey", JSON.stringify({ firstName: emailName }));
+            }
+          }
+        } catch (createErr) {
+          console.error("[SignIn] error creating profile row:", createErr);
         }
       }
 

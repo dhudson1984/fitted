@@ -68,11 +68,25 @@ export default function ProfilePage() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [editLifestyle, setEditLifestyle] = useState<string[]>([]);
+  const [memberSince, setMemberSince] = useState("Recently");
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("fitted_survey");
       if (raw) setSurvey(JSON.parse(raw));
+    } catch {}
+
+    // Resolve member since: prefer account creation date, fall back to survey completion
+    try {
+      const accountDate = localStorage.getItem("fitted_member_since");
+      const surveyRaw = localStorage.getItem("fitted_survey");
+      const surveyDate = surveyRaw ? (JSON.parse(surveyRaw) as SurveyData)?.completedAt : undefined;
+      const dateStr = accountDate || surveyDate;
+      if (dateStr) {
+        setMemberSince(
+          new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+        );
+      }
     } catch {}
 
     try {
@@ -121,11 +135,7 @@ export default function ProfilePage() {
   const sizing = survey?.["sizing-1"] || {};
   const basics = survey?.["basics-1"] || {};
   const brands = survey?.["inspo-1"] || [];
-  const completedAt = survey?.completedAt;
-
-  const memberSince = completedAt
-    ? new Date(completedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
-    : "Recently";
+  // memberSince is set via useState/useEffect from fitted_member_since localStorage key
 
   const handleRetakeSurvey = () => {
     localStorage.removeItem("fitted_survey");
