@@ -5,6 +5,7 @@ import CategoryCard from "@/components/app/CategoryCard";
 import PickedForYou from "@/components/app/PickedForYou";
 import SavedLooksSection from "@/components/app/SavedLooksSection";
 import DashboardGreeting from "./DashboardGreeting";
+import DashboardSaveBanner from "@/components/app/DashboardSaveBanner";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -26,6 +27,8 @@ export default async function DashboardPage() {
 
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-10">
         <DashboardGreeting />
+
+        <DashboardSaveBanner />
 
         <PickedForYou />
 
