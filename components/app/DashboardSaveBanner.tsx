@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import SaveProfileModal from "@/components/auth/SaveProfileModal";
 
 const DISMISSED_KEY = "fitted_save_banner_dismissed";
@@ -12,13 +13,23 @@ export default function DashboardSaveBanner() {
   useEffect(() => {
     async function check() {
       try {
-        if (localStorage.getItem(DISMISSED_KEY)) return;
+        if (localStorage.getItem(DISMISSED_KEY)) {
+          console.log("[SaveBanner] dismissed by user, skipping");
+          return;
+        }
         const survey = localStorage.getItem("fitted_survey");
-        if (!survey) return;
-        const { supabase } = await import("@/lib/supabase");
+        if (!survey) {
+          console.log("[SaveBanner] no survey data, skipping");
+          return;
+        }
         const { data } = await supabase.auth.getSession();
-        if (!data.session) setVisible(true);
-      } catch {}
+        console.log("[SaveBanner] session:", data.session ? "exists" : "null");
+        if (!data.session) {
+          setVisible(true);
+        }
+      } catch (err) {
+        console.error("[SaveBanner] check error:", err);
+      }
     }
     check();
   }, []);
@@ -54,7 +65,14 @@ export default function DashboardSaveBanner() {
       >
         <p
           className="font-body"
-          style={{ fontSize: 13, color: "var(--charcoal)", fontWeight: 300, lineHeight: 1.5, flex: 1, margin: 0 }}
+          style={{
+            fontSize: 13,
+            color: "var(--charcoal)",
+            fontWeight: 300,
+            lineHeight: 1.5,
+            flex: 1,
+            margin: 0,
+          }}
         >
           Your profile isn&apos;t saved yet — create a password to access your looks from any device.
         </p>
