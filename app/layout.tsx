@@ -38,6 +38,9 @@ export const metadata: Metadata = {
     title: "Fitted — Men's Style, Curated",
     description: "AI-matched outfit curation with shoppable pieces. Premium men's fashion styling made simple.",
   },
+  other: {
+    "impact-site-verification": "4d523577-d00c-478f-bbdf-bf8a57d6c746",
+  },
 };
 
 export default function RootLayout({
