@@ -190,7 +190,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               <button
                 data-testid="button-signout-warning-save"
                 className="font-body"
-                onClick={() => setSignOutSaveModalOpen(true)}
+                onClick={() => { setShowSignOutWarning(false); setTimeout(() => setSignOutSaveModalOpen(true), 50); }}
                 style={{
                   width: "100%",
                   padding: "14px 24px",
