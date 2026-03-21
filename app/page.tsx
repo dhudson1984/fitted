@@ -512,14 +512,8 @@ export default async function LandingPage() {
             rel="noopener noreferrer"
             data-testid="link-instagram"
             aria-label="Fitted on Instagram"
-            style={{
-              color: "rgba(196,184,154,0.5)",
-              display: "flex",
-              alignItems: "center",
-              transition: "color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
+            className="opacity-50 hover:opacity-100 transition-opacity duration-200"
+            style={{ color: "var(--stone)", display: "flex", alignItems: "center" }}
           >
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -533,14 +527,8 @@ export default async function LandingPage() {
             rel="noopener noreferrer"
             data-testid="link-tiktok"
             aria-label="Fitted on TikTok"
-            style={{
-              color: "rgba(196,184,154,0.5)",
-              display: "flex",
-              alignItems: "center",
-              transition: "color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
+            className="opacity-50 hover:opacity-100 transition-opacity duration-200"
+            style={{ color: "var(--stone)", display: "flex", alignItems: "center" }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.81a8.16 8.16 0 0 0 4.77 1.52V6.88a4.84 4.84 0 0 1-1-.19z" />
@@ -563,16 +551,13 @@ export default async function LandingPage() {
             <a
               href="mailto:hello@shopfitted.co"
               data-testid="link-contact-email"
-              className="font-body"
+              className="font-body opacity-50 hover:opacity-100 transition-opacity duration-200"
               style={{
                 fontSize: 11,
                 letterSpacing: "0.06em",
-                color: "rgba(196,184,154,0.5)",
+                color: "var(--stone)",
                 textDecoration: "none",
-                transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
             >
               hello@shopfitted.co
             </a>
@@ -580,17 +565,14 @@ export default async function LandingPage() {
           <li>
             <a
               href="#"
-              className="font-body"
+              className="font-body opacity-50 hover:opacity-100 transition-opacity duration-200"
               style={{
                 fontSize: 11,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "rgba(196,184,154,0.5)",
+                color: "var(--stone)",
                 textDecoration: "none",
-                transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
             >
               Privacy
             </a>
@@ -598,17 +580,14 @@ export default async function LandingPage() {
           <li>
             <a
               href="#"
-              className="font-body"
+              className="font-body opacity-50 hover:opacity-100 transition-opacity duration-200"
               style={{
                 fontSize: 11,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "rgba(196,184,154,0.5)",
+                color: "var(--stone)",
                 textDecoration: "none",
-                transition: "color 0.2s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
             >
               Terms
             </a>
