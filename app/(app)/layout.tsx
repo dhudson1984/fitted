@@ -7,6 +7,7 @@ import MobileMenuDrawer from "@/components/MobileMenuDrawer";
 import BagDrawer from "@/components/BagDrawer";
 import SaveProfileModal from "@/components/auth/SaveProfileModal";
 import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 
 import { ToastProvider } from "@/components/Toast";
 import { BagProvider, useBag } from "@/components/providers/BagProvider";
@@ -40,11 +41,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Check whether a real Supabase session exists (to gate the sign-out warning)
-    void (async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      setHasSupabaseSession(!!sessionData.session);
-    })();
+    // Reactively track Supabase session — fires immediately and on every auth change
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        setHasSupabaseSession(!!session);
+      }
+    );
+
+    return () => { subscription.unsubscribe(); };
   }, []);
 
   const doSignOut = useCallback(() => {
