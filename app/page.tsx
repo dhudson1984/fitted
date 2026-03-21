@@ -480,14 +480,16 @@ export default async function LandingPage() {
       <footer
         data-testid="landing-footer"
         style={{
-          padding: "48px 60px",
+          padding: "40px 60px",
           background: "var(--deep)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: 24,
         }}
-        className="max-md:!flex-col max-md:!gap-4 max-md:!px-6 max-md:!py-8 max-md:!text-center"
+        className="max-md:!flex-col max-md:!gap-6 max-md:!px-6 max-md:!py-8 max-md:!text-center"
       >
+        {/* Wordmark */}
         <span
           className="font-display"
           style={{
@@ -496,17 +498,85 @@ export default async function LandingPage() {
             letterSpacing: "0.15em",
             textTransform: "uppercase",
             color: "var(--stone)",
+            flexShrink: 0,
           }}
         >
           Fitted
         </span>
+
+        {/* Social icons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <a
+            href="https://instagram.com/lookfitted"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="link-instagram"
+            aria-label="Fitted on Instagram"
+            style={{
+              color: "rgba(196,184,154,0.5)",
+              display: "flex",
+              alignItems: "center",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="0.75" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
+          <a
+            href="https://tiktok.com/@lookfitted"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="link-tiktok"
+            aria-label="Fitted on TikTok"
+            style={{
+              color: "rgba(196,184,154,0.5)",
+              display: "flex",
+              alignItems: "center",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.81a8.16 8.16 0 0 0 4.77 1.52V6.88a4.84 4.84 0 0 1-1-.19z" />
+            </svg>
+          </a>
+        </div>
+
+        {/* Nav + email */}
         <ul
           style={{
             display: "flex",
-            gap: 32,
+            gap: 28,
             listStyle: "none",
+            alignItems: "center",
+            flexWrap: "wrap",
           }}
+          className="max-md:!justify-center"
         >
+          <li>
+            <a
+              href="mailto:hello@shopfitted.co"
+              data-testid="link-contact-email"
+              className="font-body"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                color: "rgba(196,184,154,0.5)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
+            >
+              hello@shopfitted.co
+            </a>
+          </li>
           <li>
             <a
               href="#"
@@ -519,6 +589,8 @@ export default async function LandingPage() {
                 textDecoration: "none",
                 transition: "color 0.2s",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
             >
               Privacy
             </a>
@@ -535,24 +607,10 @@ export default async function LandingPage() {
                 textDecoration: "none",
                 transition: "color 0.2s",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--stone)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(196,184,154,0.5)")}
             >
               Terms
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="font-body"
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "rgba(196,184,154,0.5)",
-                textDecoration: "none",
-                transition: "color 0.2s",
-              }}
-            >
-              Contact
             </a>
           </li>
         </ul>
