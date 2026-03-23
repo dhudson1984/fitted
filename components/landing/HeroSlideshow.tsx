@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 
+const SUPABASE_STORAGE = "https://yjbzqcypgekdydmoafbj.supabase.co/storage/v1/object/public/hero";
+
 const slides = [
-  { imageUrl: "/hero/smart-casual.jpeg", category: "Smart Casual" },
-  { imageUrl: "/hero/work.jpeg", category: "Work" },
-  { imageUrl: "/hero/night-out.jpg", category: "Night Out" },
-  { imageUrl: "/hero/athletic.jpg", category: "Athletic & Outdoors" },
+  { imageUrl: `${SUPABASE_STORAGE}/smart-casual.jpeg`, category: "Smart Casual" },
+  { imageUrl: `${SUPABASE_STORAGE}/work.jpeg`,         category: "Work" },
+  { imageUrl: `${SUPABASE_STORAGE}/night-out.jpg`,     category: "Night Out" },
+  { imageUrl: `${SUPABASE_STORAGE}/athletic.jpg`,      category: "Athletic & Outdoors" },
 ];
 
 export default function HeroSlideshow() {
