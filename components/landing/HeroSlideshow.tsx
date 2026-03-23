@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 
 const slides = [
-  { bg: "linear-gradient(165deg,#8B7355 0%,#5C4A32 30%,#2C2416 100%)", category: "Smart Casual" },
-  { bg: "linear-gradient(165deg,#4A5E4A 0%,#2E3D2E 40%,#1A2318 100%)", category: "Athletic & Outdoors" },
-  { bg: "linear-gradient(165deg,#5C5A6E 0%,#3A3848 40%,#1E1C28 100%)", category: "Work" },
-  { bg: "linear-gradient(165deg,#6E4E3A 0%,#4A3226 40%,#221815 100%)", category: "Night Out" },
+  { imageUrl: "/hero/smart-casual.jpeg", category: "Smart Casual" },
+  { imageUrl: "/hero/work.jpeg", category: "Work" },
+  { imageUrl: "/hero/night-out.jpg", category: "Night Out" },
+  { imageUrl: "/hero/athletic.jpg", category: "Athletic & Outdoors" },
 ];
 
 export default function HeroSlideshow() {
@@ -45,14 +45,25 @@ export default function HeroSlideshow() {
               inset: 0,
               opacity: active === i ? 1 : 0,
               transition: "opacity 1.2s ease",
-              background: slide.bg,
+              backgroundImage: `url(${slide.imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center top",
             }}
           >
+            {/* Uniform dark veil for readability */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(to top,rgba(26,26,24,0.85) 0%,rgba(26,26,24,0.2) 60%,transparent 100%)",
+                background: "rgba(20,18,14,0.45)",
+              }}
+            />
+            {/* Bottom-up gradient for text legibility */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to top,rgba(20,18,14,0.90) 0%,rgba(20,18,14,0.25) 55%,transparent 100%)",
               }}
             />
             <div
