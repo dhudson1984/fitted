@@ -47,7 +47,7 @@ export default function HeroSlideshow() {
               inset: 0,
               opacity: active === i ? 1 : 0,
               transition: "opacity 1.2s ease",
-              backgroundImage: `url(${slide.imageUrl})`,
+              backgroundImage: `url("${slide.imageUrl}")`,
               backgroundSize: "cover",
               backgroundPosition: "center top",
             }}
