@@ -22,6 +22,7 @@ export interface Piece {
   material: string;
   fit_type: string;
   description: string;
+  image_url?: string | null;
 }
 
 export interface LookWithPieces extends Look {

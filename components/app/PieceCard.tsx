@@ -60,24 +60,47 @@ export default function PieceCard({ piece, lookName, lookSlug, onSwap }: PieceCa
           transition: "background 0.2s",
           flexDirection: "column",
           gap: 8,
+          position: "relative",
+          overflow: "hidden",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#ede8df")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "var(--cream)")}
+        onMouseEnter={(e) => {
+          if (!piece.image_url) e.currentTarget.style.background = "#ede8df";
+        }}
+        onMouseLeave={(e) => {
+          if (!piece.image_url) e.currentTarget.style.background = "var(--cream)";
+        }}
       >
-        <div
-          style={{
-            fontSize: 10,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--stone)",
-            fontWeight: 500,
-          }}
-        >
-          {slotLabel}
-        </div>
-        <div style={{ fontSize: 9, letterSpacing: "0.1em", color: "var(--stone)", opacity: 0.6, fontFamily: "'DM Sans', sans-serif" }}>
-          tap to expand
-        </div>
+        {piece.image_url ? (
+          <img
+            data-testid={`img-piece-${piece.id}`}
+            src={piece.image_url}
+            alt={piece.name}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <>
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--stone)",
+                fontWeight: 500,
+              }}
+            >
+              {slotLabel}
+            </div>
+            <div style={{ fontSize: 9, letterSpacing: "0.1em", color: "var(--stone)", opacity: 0.6, fontFamily: "'DM Sans', sans-serif" }}>
+              tap to expand
+            </div>
+          </>
+        )}
       </button>
 
       <div style={{ padding: "16px 16px 12px", flex: 1 }}>
