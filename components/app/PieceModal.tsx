@@ -249,52 +249,69 @@ export default function PieceModal({
             position: "relative",
             alignSelf: "stretch",
             minHeight: 360,
+            overflow: "hidden",
           }}
           className="max-md:!w-full max-md:!min-h-[200px]"
         >
-          <div
-            style={{
-              position: "absolute",
-              top: 16,
-              left: 16,
-              fontSize: 9,
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              color: "var(--stone)",
-              fontWeight: 500,
-              fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
-            }}
-          >
-            {slotLabel ?? "Piece"}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "0 24px" }}>
-            <div
+          {piece?.image_url ? (
+            <img
+              data-testid={`img-modal-piece-${id}`}
+              src={piece.image_url}
+              alt={piece.name}
               style={{
-                fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
-                fontSize: 36,
-                fontWeight: 300,
-                color: "var(--charcoal)",
-                textAlign: "center",
-                lineHeight: 1.1,
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
               }}
-            >
-              {brand}
-            </div>
-            {piece?.color && (
+            />
+          ) : (
+            <>
               <div
                 style={{
-                  fontSize: 10,
-                  color: "var(--stone)",
-                  letterSpacing: "0.1em",
-                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                  position: "absolute",
+                  top: 16,
+                  left: 16,
+                  fontSize: 9,
+                  letterSpacing: "0.2em",
                   textTransform: "uppercase",
+                  color: "var(--stone)",
+                  fontWeight: 500,
+                  fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
                 }}
               >
-                {piece.color}
+                {slotLabel ?? "Piece"}
               </div>
-            )}
-          </div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "0 24px" }}>
+                <div
+                  style={{
+                    fontFamily: "'Cormorant Garamond', var(--font-cormorant), serif",
+                    fontSize: 36,
+                    fontWeight: 300,
+                    color: "var(--charcoal)",
+                    textAlign: "center",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {brand}
+                </div>
+                {piece?.color && (
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "var(--stone)",
+                      letterSpacing: "0.1em",
+                      fontFamily: "'DM Sans', var(--font-dm-sans), sans-serif",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {piece.color}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         <div
