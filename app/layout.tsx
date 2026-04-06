@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -53,6 +54,10 @@ export default function RootLayout({
       <body>
         {children}
         <Analytics />
+        <Script
+          src="https://s.skimresources.com/js/301099X1789005.skimlinks.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
